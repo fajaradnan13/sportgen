@@ -1,0 +1,176 @@
+{
+    "_note": "Update this file whenever you add/remove assets. Required for Cloudflare Pages (no directory listing).",
+    "_version": "1.0",
+    "football": {
+        "logos": {
+            "liga1-indonesia": {
+                "label": "Liga 1 Indonesia (BRI Super League)",
+                "path": "assets/football/logos/liga1-indonesia/",
+                "files": [
+                    "Arema FC.png",
+                    "Bali United.png",
+                    "Borneo.png",
+                    "Dewa United.png",
+                    "FC Bhayangkara.png",
+                    "Madura United.png",
+                    "Malut United.png",
+                    "PSBS Biak.png",
+                    "PSIM Yogyakarta.png",
+                    "PSM Makassar.png",
+                    "Persebaya.png",
+                    "Persib Bandung.png",
+                    "Persija Jakarta.png",
+                    "Persijap Jepara.png",
+                    "Persik Kediri.png",
+                    "Persis Solo.png",
+                    "Persita.png",
+                    "Semen Padang.png"
+                ]
+            },
+            "liga2-indonesia": {
+                "label": "Liga 2 Indonesia",
+                "path": "assets/football/logos/liga2-indonesia/",
+                "files": []
+            },
+            "champions-league": {
+                "label": "UEFA Champions League",
+                "path": "assets/football/logos/champions-league/",
+                "files": []
+            },
+            "premier-league": {
+                "label": "Premier League",
+                "path": "assets/football/logos/premier-league/",
+                "files": [
+                    "Manchester United.svg",
+                    "Manchester City.svg",
+                    "arsenal.svg",
+                    "aston villa.svg",
+                    "bournemouth.svg",
+                    "brentford.svg",
+                    "brighton-hove-albion.svg",
+                    "burnley.jpg",
+                    "chelsea.svg",
+                    "crystal palace.svg",
+                    "everton.svg",
+                    "fulham.svg",
+                    "leeds.svg",
+                    "liverpool.svg",
+                    "newcastle.svg",
+                    "nottingham-forest.svg",
+                    "tottenham.svg",
+                    "westham.svg",
+                    "sunderland.png",
+                    "wolverhampton.svg"
+                ]
+            },
+            "la-liga": {
+                "label": "La Liga",
+                "path": "assets/football/logos/la-liga/",
+                "files": []
+            },
+            "bundesliga": {
+                "label": "Bundesliga",
+                "path": "assets/football/logos/bundesliga/",
+                "files": []
+            },
+            "serie-a": {
+                "label": "Serie A",
+                "path": "assets/football/logos/serie-a/",
+                "files": []
+            },
+            "ligue-1": {
+                "label": "Ligue 1",
+                "path": "assets/football/logos/ligue-1/",
+                "files": []
+            },
+            "eredivisie": {
+                "label": "Eredivisie",
+                "path": "assets/football/logos/eredivisie/",
+                "files": []
+            },
+            "piala-presiden": {
+                "label": "Piala Presiden",
+                "path": "assets/football/logos/piala-presiden/",
+                "files": []
+            },
+            "piala-indonesia": {
+                "label": "Piala Indonesia",
+                "path": "assets/football/logos/piala-indonesia/",
+                "files": []
+            },
+            "asean-championship": {
+                "label": "ASEAN Championship",
+                "path": "assets/football/logos/asean-championship/",
+                "files": []
+            },
+            "afc-champions": {
+                "label": "AFC Champions League",
+                "path": "assets/football/logos/afc-champions/",
+                "files": []
+            }
+        },
+        "league-badges": {
+            "path": "assets/football/league-badges/",
+            "files": [
+                "Super League.png",
+                "Premier-League-Logo-PNG.png"
+            ],
+            "_note": "Add badge files here. leagueBadgeMap links dropdown values to badge filenames.",
+            "leagueBadgeMap": {
+                "BRI SUPER LEAGUE": "Super League.png",
+                "Liga 1 Indonesia": "Super League.png",
+                "Premier League": "Premier-League-Logo-PNG.png",
+                "La Liga": "",
+                "UEFA Champions League": "",
+                "Bundesliga": "",
+                "Serie A": "",
+                "Ligue 1": "",
+                "Eredivisie": "",
+                "AFC Champions League": "",
+                "ASEAN Championship": "",
+                "Piala Presiden": "",
+                "Piala Indonesia": ""
+            }
+        },
+        "backgrounds": {
+            "path": "assets/football/backgrounds/",
+            "files": [
+                "Bola - Bola di Lapangan.jpg",
+                "Bola - Lapangan.png",
+                "samlegalintern-soccer.jpg"
+            ]
+        }
+    },
+    "volleyball": {
+        "logos": {
+            "proliga": {
+                "label": "Proliga Indonesia",
+                "path": "assets/volleyball/logos/proliga/",
+                "files": []
+            },
+            "world-championship": {
+                "label": "World Championship",
+                "path": "assets/volleyball/logos/world-championship/",
+                "files": []
+            },
+            "sea-games": {
+                "label": "SEA Games",
+                "path": "assets/volleyball/logos/sea-games/",
+                "files": []
+            }
+        },
+        "backgrounds": {
+            "path": "assets/volleyball/backgrounds/",
+            "files": [
+                "cewek.jpg",
+                "cowok.jpg"
+            ]
+        }
+    },
+    "channel": {
+        "logos": {
+            "path": "assets/channel/logos/",
+            "files": []
+        }
+    }
+}
