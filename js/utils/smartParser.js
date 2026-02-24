@@ -213,9 +213,10 @@ export const SmartParser = {
     _normalizeStandingRow(r, idx = 0) {
         return {
             pos: r.pos ?? r.rank ?? (idx + 1), name: r.name ?? r.team ?? '',
-            mp: r.mp ?? r.played ?? 0, w: r.w ?? r.won ?? 0, d: r.d ?? r.drawn ?? 0, l: r.l ?? r.lost ?? 0,
+            mp: r.mp ?? r.played ?? r.matches ?? 0, w: r.w ?? r.won ?? 0, d: r.d ?? r.drawn ?? 0, l: r.l ?? r.lost ?? 0,
             gf: r.gf ?? r.goalsFor ?? 0, ga: r.ga ?? r.goalsAgainst ?? 0,
-            gd: r.gd ?? ((r.gf ?? 0) - (r.ga ?? 0)), pts: r.pts ?? r.points ?? 0, logo: r.logo ?? ''
+            gd: r.gd ?? ((r.gf ?? 0) - (r.ga ?? 0)), pts: r.pts ?? r.points ?? 0, logo: r.logo ?? '',
+            sets: r.sets ?? '0:0', form: r.form ?? []
         };
     },
     _normalizeMatch(m) {

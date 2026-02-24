@@ -146,7 +146,14 @@
             "proliga": {
                 "label": "Proliga Indonesia",
                 "path": "assets/volleyball/logos/proliga/",
-                "files": []
+                "files": [
+                    "Bhayangkara.png",
+                    "Falcons.png",
+                    "Garuda Putra.png",
+                    "Lavani.png",
+                    "Proliga.png",
+                    "Samator.png"
+                ]
             },
             "world-championship": {
                 "label": "World Championship",
@@ -157,6 +164,16 @@
                 "label": "SEA Games",
                 "path": "assets/volleyball/logos/sea-games/",
                 "files": []
+            }
+        },
+        "league-badges": {
+            "path": "assets/volleyball/logos/proliga/",
+            "files": [
+                "Proliga.png"
+            ],
+            "leagueBadgeMap": {
+                "PROLIGA 2026": "Proliga.png",
+                "PROLIGA": "Proliga.png"
             }
         },
         "backgrounds": {

@@ -924,7 +924,7 @@ export const Football = {
                 this.data.title = value;
             }
             // Auto-load league badge from static assets
-            const badgeUrl = AssetRegistry.getLeagueBadge(this.data.title);
+            const badgeUrl = AssetRegistry.getLeagueBadge('football', this.data.title);
             if (badgeUrl) {
                 this.data.leagueLogo = badgeUrl;
                 this.renderControls(); // refresh logo preview in sidebar

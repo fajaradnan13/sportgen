@@ -104,12 +104,13 @@ export const AssetRegistry = {
 
     /**
      * Get league badge URL by league display name.
-     * Uses leagueBadgeMap in manifest.json football.league-badges.
+     * Uses leagueBadgeMap in manifest.json [sport].league-badges.
+     * @param {string} sport - 'football' | 'volleyball'
      * @param {string} leagueTitle - e.g. 'BRI SUPER LEAGUE'
      * @returns {string|null} URL or null if not found/empty
      */
-    getLeagueBadge(leagueTitle) {
-        const badgeSection = this._manifest?.football?.['league-badges'];
+    getLeagueBadge(sport, leagueTitle) {
+        const badgeSection = this._manifest?.[sport]?.['league-badges'];
         if (!badgeSection) return null;
         const map = badgeSection.leagueBadgeMap || {};
         // Try exact match first, then case-insensitive

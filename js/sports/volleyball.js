@@ -25,6 +25,7 @@ export const Volleyball = {
     ],
 
     ROWS_PER_PAGE: 8,
+    RESULTS_PER_PAGE: 2,
 
     THEMES: {
         'blue': { name: '🔵 Proliga Blue', header: 'bg-gradient-to-r from-blue-800 to-blue-600 text-white', odd: 'bg-slate-800/95', even: 'bg-slate-700/95', border: 'border-blue-500/30', accent: 'text-blue-400', pts: 'text-yellow-400' },
@@ -48,7 +49,7 @@ export const Volleyball = {
     ],
 
     TEMPLATES: {
-        standings: JSON.stringify({ sport: "volleyball", mode: "standings", title: "PROLIGA 2026", standings: [{ pos: 1, name: "Jakarta LavAni", matches: 10, won: 9, lost: 1, sets: "28:8", pts: 26, form: ["W", "W", "W", "W", "L"] }, { pos: 2, name: "Bhayangkara", matches: 10, won: 8, lost: 2, sets: "25:10", pts: 23, form: ["W", "W", "L", "W", "W"] }] }, null, 2),
+        standings: JSON.stringify({ sport: "volleyball", mode: "standings", title: "PROLIGA 2026", standings: [{ pos: 1, name: "Jakarta LavAni", mp: 10, w: 9, l: 1, sets: "28:8", pts: 26, form: ["W", "W", "W", "W", "L"] }, { pos: 2, name: "Bhayangkara", mp: 10, w: 8, l: 2, sets: "25:10", pts: 23, form: ["W", "W", "L", "W", "W"] }] }, null, 2),
         schedule: JSON.stringify({ sport: "volleyball", mode: "schedule", title: "PROLIGA 2026", matches: [{ date: "SABTU, 10 MEI 2026", time: "14:00", home: "Kudus Sukun Badak", away: "Jakarta Garuda", venue: "GOR Ken Arok", channel: "MOJI TV" }] }, null, 2),
         results: JSON.stringify({ sport: "volleyball", mode: "results", title: "PROLIGA 2026", matches: [{ date: "JUMAT, 9 MEI 2026", home: "Jakarta LavAni", away: "Jakarta STIN BIN", homeScore: 3, awayScore: 1, setScores: "25-23, 20-25, 25-21, 25-19", venue: "GOR Ken Arok" }] }, null, 2),
         lineup: JSON.stringify({ sport: "volleyball", mode: "lineup", title: "STARTING LINEUP", matches: [{ date: "SABTU, 10 MEI 2026", time: "14:00", home: "Jakarta LavAni", away: "Jakarta Garuda", homeLineup: [{ name: "Boy Arnez", no: 3, pos: "OH" }, { name: "Dio Zulfikri", no: 15, pos: "S" }, { name: "Fahri S", no: 10, pos: "OH" }, { name: "M Malizi", no: 8, pos: "MB" }, { name: "Rivan", no: 12, pos: "OP" }, { name: "Prasojo", no: 6, pos: "MB" }], awayLineup: [{ name: "Alfin D", no: 4, pos: "OH" }, { name: "Nizar", no: 8, pos: "S" }, { name: "Agil", no: 11, pos: "OP" }, { name: "Yuda", no: 9, pos: "MB" }, { name: "Rendy", no: 17, pos: "OH" }, { name: "Cep Indra", no: 3, pos: "MB" }] }] }, null, 2)
@@ -72,6 +73,9 @@ export const Volleyball = {
         animStagger: 0.1,
         animLoop: false,
         animLoopInterval: 5,
+        standingsPage: 0,
+        resultsPage: 0,
+        loopTimer: null,
         scheduleCardStyle: 'broadcast',
 
         leagueLogo: '',
@@ -81,10 +85,10 @@ export const Volleyball = {
 
         // Core Data
         standings: [
-            { pos: 1, name: "Jakarta LavAni", matches: 10, won: 9, lost: 1, sets: "28:8", pts: 26, form: ["W", "W", "W", "W", "L"], logo: '' },
-            { pos: 2, name: "Jakarta Bhayangkara", matches: 10, won: 8, lost: 2, sets: "25:10", pts: 23, form: ["W", "W", "L", "W", "W"], logo: '' },
-            { pos: 3, name: "Jakarta STIN BIN", matches: 10, won: 7, lost: 3, sets: "22:14", pts: 20, form: ["L", "W", "W", "L", "W"], logo: '' },
-            { pos: 4, name: "Palembang BSB", matches: 10, won: 5, lost: 5, sets: "18:18", pts: 15, form: ["W", "L", "L", "W", "L"], logo: '' }
+            { pos: 1, name: "Jakarta LavAni", mp: 10, w: 9, l: 1, sets: "28:8", pts: 26, form: ["W", "W", "W", "W", "L"], logo: '' },
+            { pos: 2, name: "Jakarta Bhayangkara", mp: 10, w: 8, l: 2, sets: "25:10", pts: 23, form: ["W", "W", "L", "W", "W"], logo: '' },
+            { pos: 3, name: "Jakarta STIN BIN", mp: 10, w: 7, l: 3, sets: "22:14", pts: 20, form: ["L", "W", "W", "L", "W"], logo: '' },
+            { pos: 4, name: "Palembang BSB", mp: 10, w: 5, l: 5, sets: "18:18", pts: 15, form: ["W", "L", "L", "W", "L"], logo: '' }
         ],
         schedule: [
             {
@@ -114,11 +118,12 @@ export const Volleyball = {
         await this._loadSavedBgs();
 
         // Hydrate default logos
-        this.data.leagueLogo = AssetRegistry.getLeagueBadge(this.data.title) || '';
+        this.data.leagueLogo = AssetRegistry.getLeagueBadge('volleyball', this.data.title) || '';
         const chs = AssetRegistry.getChannelLogos();
         this.data.channelLogo = chs.length ? chs[0].url : '';
-        this._autoAssignLogos(this.data.standings);
+        await this._autoAssignLogos(this.data.standings);
 
+        this.startPageLoop();
         this.renderControls();
         this.renderView();
     },
@@ -133,8 +138,12 @@ export const Volleyball = {
                 if (totalPages > 1) {
                     this.data.standingsPage = (this.data.standingsPage + 1) % totalPages;
                 }
-            } else if (this.data.currentView === 'schedule') {
-                // Future consideration: schedule pagination
+            } else if (this.data.currentView === 'results') {
+                const total = this.data.results.length;
+                const totalPages = Math.ceil(total / (this.RESULTS_PER_PAGE || 2));
+                if (totalPages > 1) {
+                    this.data.resultsPage = (this.data.resultsPage + 1) % totalPages;
+                }
             }
             this.renderView();
         }, (this.data.animLoopInterval || 5) * 1000);
@@ -163,23 +172,71 @@ export const Volleyball = {
         this.data.savedBackgrounds = await DB.getAllBackgrounds();
     },
 
+    LOGO_ALIASES: {
+        'lavani': 'lavani',
+        'jakarta lavani': 'lavani',
+        'lavani allo bank': 'lavani',
+        'lavani navy': 'lavani',
+        'bhayangkara': 'bhayangkara',
+        'jakarta bhayangkara': 'bhayangkara',
+        'bhayangkara precision': 'bhayangkara',
+        'stin bin': 'stin bin',
+        'jakarta stin bin': 'stin bin',
+        'garuda': 'garuda putra',
+        'garuda putra': 'garuda putra',
+        'jakarta garuda': 'garuda putra',
+        'samator': 'samator',
+        'surabaya samator': 'samator',
+        'bin samator': 'samator',
+        'falcons': 'falcons',
+        'jakarta falcons': 'falcons',
+        'electrick': 'jakarta elektrik pln',
+        'elektrik': 'jakarta elektrik pln',
+        'pln': 'jakarta elektrik pln',
+        'petrokimia': 'gresik petrokimia',
+        'pupuk indonesia': 'gresik petrokimia',
+        'bank bjb': 'bandung bjb tandamata',
+        'tandamata': 'bandung bjb tandamata',
+        'popsivo': 'jakarta popsivo polwan',
+        'polwan': 'jakarta popsivo polwan',
+        'pertamina': 'jakarta pertamina enduro',
+        'enduro': 'jakarta pertamina enduro',
+        'fastron': 'jakarta pertamina enduro',
+    },
+
     async _autoAssignLogos(teamArray) {
-        const dbLogos = await DB.getAllLogos();
-        if (!dbLogos || Object.keys(dbLogos).length === 0) return;
+        await AssetRegistry.init();
 
-        const logoMap = {};
-        Object.keys(dbLogos).forEach(k => logoMap[k.toLowerCase()] = dbLogos[k]);
+        const allLogos = [];
+        const leagues = AssetRegistry.getLeagues('volleyball');
+        for (const league of leagues) {
+            allLogos.push(...AssetRegistry.getLogos('volleyball', league.key));
+        }
+        if (!allLogos.length) { console.warn('[Volleyball-AutoLogo] No logos in AssetRegistry'); return; }
 
-        teamArray.forEach(t => {
-            if (!t.logo) {
-                const nameKey = t.name.toLowerCase();
-                if (logoMap[nameKey]) t.logo = logoMap[nameKey];
-                else {
-                    const partialMatch = Object.keys(logoMap).find(k => nameKey.includes(k) || k.includes(nameKey));
-                    if (partialMatch) t.logo = logoMap[partialMatch];
-                }
+        const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        for (const t of teamArray) {
+            if (t.logo) continue;
+            const rawName = t.name.toLowerCase().trim();
+            const target = norm(t.name);
+
+            // Tier 0: alias map
+            const aliasKey = Object.keys(this.LOGO_ALIASES).find(k => rawName.includes(k) || k.includes(rawName));
+            const aliasTarget = aliasKey ? norm(this.LOGO_ALIASES[aliasKey]) : null;
+            const searchTarget = aliasTarget || target;
+
+            // Tier 1: exact match
+            let match = allLogos.find(l => norm(l.name) === searchTarget);
+
+            // Tier 2: partial match
+            if (!match) match = allLogos.find(l => searchTarget.includes(norm(l.name)) || norm(l.name).includes(searchTarget));
+
+            if (match) {
+                t.logo = match.url;
+                console.log(`[Volleyball-AutoLogo] ${t.name} => ${match.url}`);
             }
-        });
+        }
     },
 
     renderControls() {
@@ -329,31 +386,42 @@ export const Volleyball = {
                         <input type="range" id="inpBgOpacity" min="0" max="1" step="0.05" value="${t.bgOpacity}" class="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="window.VolleyballModule.updateData(event)">
                     </div>
                     <div class="flex flex-col gap-1 items-start">
-                        <label class="block text-[10px] text-gray-400 mb-0.5">Loop Animations?</label>
+                        <label class="block text-[10px] text-gray-400 mb-0.5">Auto Loop (Ganti Hal.)</label>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="chkAnimLoop" ${t.animLoop ? 'checked' : ''} onchange="window.VolleyballModule.updateData(event)" class="accent-blue-500">
-                            ${t.animLoop ? `<input type="number" id="inpLoopInterval" value="${t.animLoopInterval}" class="w-12 bg-gray-900 border border-gray-600 rounded px-1 text-[10px] text-white text-center" onchange="window.VolleyballModule.updateData(event)"> <span class="text-[9px] text-gray-500">detik</span>` : ''}
+                            <input type="number" id="inpLoopInterval" value="${t.animLoopInterval}" class="w-12 bg-gray-900 border border-gray-600 rounded px-1 text-[10px] text-white text-center" onchange="window.VolleyballModule.updateData(event)"> 
+                            <span class="text-[9px] text-gray-500">detik</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- THEME THUMBNAILS (For Background styling) -->
-                <div class="border-t border-gray-600 pt-2 ${t.currentView === 'lineup' ? 'hidden' : ''}">
-                    <label class="block text-[10px] text-gray-400 mb-1">Preset Tema Visual</label>
-                    <div class="grid grid-cols-4 gap-1.5 max-h-[80px] overflow-y-auto custom-scrollbar pr-1">
-                        ${this.CSS_THEMES.map(th => `
-                            <div onclick="window.VolleyballModule.applyCardTheme('${th.key}')"
-                                class="cursor-pointer border-2 rounded shrink-0 flex items-center justify-center p-1 relative group overflow-hidden h-8
-                                       ${t.cardTheme === th.key ? 'border-yellow-400' : 'border-gray-600 hover:border-gray-400'}"
-                                style="background: ${th.swatchBg || th.bg};">
-                                <span class="text-[8px] font-bold text-white drop-shadow-md z-10 leading-none text-center pointer-events-none">${th.label}</span>
-                                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition"></div>
-                            </div>
-                        `).join('')}
+                <!-- Background & Theme Selection (Dropdowns) -->
+                <div class="border-t border-gray-600 pt-2 grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-0.5">Background Image</label>
+                        <select id="inpBgImage" class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-[10px] text-white" onchange="window.VolleyballModule.updateData(event)">
+                            <option value="">None / Polos</option>
+                            ${AssetRegistry.getBackgrounds('volleyball').map(bg => {
+            const filename = bg.url.split('/').pop();
+            return `<option value="${bg.url}" ${t.bgImage === bg.url ? 'selected' : ''}>${filename}</option>`;
+        }).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-0.5">Preset Tema Visual</label>
+                        <select id="inpCardTheme" class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-[10px] text-white" onchange="window.VolleyballModule.updateData(event)">
+                            ${this.CSS_THEMES.map(th => `<option value="${th.key}" ${t.cardTheme === th.key ? 'selected' : ''}>${th.label}</option>`).join('')}
+                        </select>
                     </div>
                 </div>
             </div>
         `;
+    },
+
+    setStaticBg(url) {
+        this.data.bgImage = url;
+        this.renderControls(); // refresh thumbnail highlight
+        this.renderView();
     },
 
     updateData(e) {
@@ -366,6 +434,12 @@ export const Volleyball = {
             } else {
                 this.data.title = value;
             }
+            // Auto-load league badge from static assets
+            const badgeUrl = AssetRegistry.getLeagueBadge('volleyball', this.data.title);
+            if (badgeUrl) {
+                this.data.leagueLogo = badgeUrl;
+                this.renderControls();
+            }
         }
         else if (id === 'inpWeek') this.data.week = value;
         else if (id === 'inpSeason') this.data.season = value;
@@ -375,8 +449,18 @@ export const Volleyball = {
         else if (id === 'inpAnimStag') this.data.animStagger = parseFloat(value);
         else if (id === 'inpScheduleStyle') this.data.scheduleCardStyle = value;
         else if (id === 'inpBgOpacity') this.data.bgOpacity = parseFloat(value);
-        else if (id === 'chkAnimLoop') this.data.animLoop = checked;
-        else if (id === 'inpLoopInterval') this.data.animLoopInterval = parseInt(value);
+        else if (id === 'inpBgImage') this.data.bgImage = value;
+        else if (id === 'inpCardTheme') this.applyCardTheme(value);
+        else if (id === 'chkAnimLoop') {
+            this.data.animLoop = checked;
+            if (checked) this.startPageLoop();
+            else this.stopPageLoop();
+            this.renderControls(); // sync input visibility
+        }
+        else if (id === 'inpLoopInterval') {
+            this.data.animLoopInterval = parseInt(value);
+            if (this.data.animLoop) { this.stopPageLoop(); this.startPageLoop(); }
+        }
         this.renderView();
     },
 
@@ -421,13 +505,20 @@ export const Volleyball = {
         if (!result.success) { alert(`❌ ${result.message}`); return; }
 
         const { schema } = result;
-        if (schema.title) this.data.title = schema.title;
+        if (schema.title) {
+            this.data.title = schema.title;
+            const badgeUrl = AssetRegistry.getLeagueBadge('volleyball', schema.title);
+            if (badgeUrl) this.data.leagueLogo = badgeUrl;
+        }
         if (schema.mode) this.data.currentView = schema.mode;
         if (schema.matches && schema.matches.length) {
             if (schema.mode === 'schedule') this.data.schedule = schema.matches;
             if (schema.mode === 'results') this.data.results = schema.matches;
         }
-        if (schema.standings && schema.standings.length) this.data.standings = schema.standings;
+        if (schema.standings && schema.standings.length) {
+            this.data.standings = schema.standings;
+            await this._autoAssignLogos(this.data.standings);
+        }
         if (schema.homeLineup) {
             this.data.homeLineup = schema.homeLineup;
             this.data.awayLineup = schema.awayLineup || [];
@@ -446,18 +537,31 @@ export const Volleyball = {
         const bgImgEl = document.getElementById('render-bg-image');
         if (bgEl && bgImgEl) {
             const themeDef = this.CSS_THEMES.find(th => th.key === (t.cardTheme || 'none'));
-            if (themeDef && t.cardTheme && t.cardTheme !== 'none') {
+
+            // Background Clarity Fix: If an image is selected, don't show the theme's background 
+            // gradient. This prevents color bleeding that causes the "buram" (hazy) effect.
+            if (t.bgImage) {
+                bgEl.style.background = '#000'; // Pure black backdrop for maximum image clarity
+            } else if (themeDef && t.cardTheme && t.cardTheme !== 'none') {
                 bgEl.style.background = themeDef.bg;
             } else {
                 bgEl.style.background = 'linear-gradient(to bottom, #1e3a8a, #172554)'; // Default Blue
             }
+
             bgImgEl.style.opacity = t.bgOpacity;
             if (t.bgImage) {
-                bgImgEl.style.backgroundImage = `url("${t.bgImage}")`;
+                const encodedBg = t.bgImage.startsWith('data:')
+                    ? t.bgImage
+                    : t.bgImage.split('/').map(seg => encodeURIComponent(seg)).join('/');
+                bgImgEl.style.backgroundImage = `url("${encodedBg}")`;
                 bgImgEl.style.backgroundSize = 'cover';
                 bgImgEl.style.backgroundPosition = 'center';
                 bgImgEl.style.display = 'block';
-            } else { bgImgEl.style.display = 'none'; }
+                bgImgEl.style.mixBlendMode = 'normal'; // Fix clarity: no blending with theme colors
+            } else {
+                bgImgEl.style.display = 'none';
+                bgImgEl.style.mixBlendMode = 'overlay'; // Back to default for themes
+            }
         }
 
         // Render Global Header
@@ -472,7 +576,44 @@ export const Volleyball = {
         else if (t.currentView === 'results') this._renderResults(view, theme);
         else if (t.currentView === 'lineup') this._renderLineup(view, theme);
 
+        // Render Footer
+        this._renderFooter();
         this.startPageLoop();
+    },
+
+    _renderFooter() {
+        const t = this.data;
+        const footer = document.getElementById('render-footer');
+        if (!footer) return;
+
+        footer.innerHTML = `
+            <style>
+                @keyframes ticker-scroll {
+                    0%   { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .ticker-inner {
+                    display: inline-flex;
+                    white-space: nowrap;
+                    animation: ticker-scroll 38s linear infinite;
+                    font-weight: 800;
+                }
+            </style>
+            <div class="w-full overflow-hidden relative flex items-center gap-6">
+                <!-- Channel badge -->
+                <div class="flex-shrink-0 flex items-center gap-3 pr-4 border-r-2 border-yellow-500">
+                    <img src="assets/channel/logos/logo djafarsport.png" class="h-12 w-12 object-contain rounded-full" onerror="this.style.display='none'">
+                    <span class="font-oswald text-[30px] font-black text-yellow-400 tracking-wide">djafarSport</span>
+                </div>
+
+                <!-- Running ticker — duplicated for seamless loop -->
+                <div class="flex-1 overflow-hidden">
+                    <span class="ticker-inner font-roboto text-[28px] text-white">
+                        Like & subscribe channel &nbsp;<strong class="text-yellow-400">djafarSport</strong>&nbsp; untuk mendapatkan update olahraga terbaru &nbsp;✨&nbsp;&nbsp;•&nbsp;&nbsp;
+                        Like & subscribe channel &nbsp;<strong class="text-yellow-400">djafarSport</strong>&nbsp; untuk mendapatkan update olahraga terbaru &nbsp;✨&nbsp;&nbsp;•&nbsp;&nbsp;
+                    </span>
+                </div>
+            </div>`;
     },
 
     _renderHeader() {
@@ -540,6 +681,18 @@ export const Volleyball = {
         const animClass = t.animation || 'anim-slide-up';
         const animDuration = t.animDuration || 0.8;
         const animStagger = t.animStagger || 0.1;
+        const rpp = this.ROWS_PER_PAGE;
+
+        // Pagination
+        const totalPages = Math.ceil(t.standings.length / rpp);
+        const curPage = Math.min(t.standingsPage ?? 0, Math.max(0, totalPages - 1));
+        const pageRows = t.standings.slice(curPage * rpp, (curPage + 1) * rpp);
+
+        // Page dot indicators
+        const dots = totalPages > 1 ? Array.from({ length: totalPages }, (_, i) =>
+            `<div onclick="window.VolleyballModule.goToPage(${i})"
+                class="cursor-pointer w-5 h-5 rounded-full border-2 transition-all ${i === curPage ? 'bg-white border-white scale-125' : 'bg-transparent border-white/40 hover:border-white/70'}"></div>`
+        ).join('') : '';
 
         view.innerHTML = `
             <div class="px-4 pb-8 w-full h-full flex flex-col items-center justify-start pt-2 relative">
@@ -556,12 +709,12 @@ export const Volleyball = {
                         </tr>
                     </thead>
                     <tbody>
-                        ${t.standings.slice((t.standingsPage || 0) * this.ROWS_PER_PAGE, ((t.standingsPage || 0) + 1) * this.ROWS_PER_PAGE).map((team, idx) => {
-            const i = ((t.standingsPage || 0) * this.ROWS_PER_PAGE) + idx;
+                        ${pageRows.map((team, idx) => {
+            const i = (curPage * rpp) + idx;
             const rowClass = i % 2 === 0 ? theme.even : theme.odd;
             const isRedZone = i >= 4;
             const borderClass = isRedZone ? 'border-l-4 border-l-red-600' : '';
-            const delay = idx * animStagger; // use local index for staggered animation
+            const delay = idx * animStagger;
 
             return `
                             <tr class="${rowClass} ${borderClass} text-3xl transition duration-200 group hover:brightness-110 ${animClass}" style="animation-duration: ${animDuration}s; animation-delay: ${delay}s; animation-fill-mode: both;">
@@ -581,14 +734,14 @@ export const Volleyball = {
                                         ${(team.form || []).slice(0, 5).map(f => {
                 let color = 'bg-gray-600';
                 if (f === 'W') color = 'bg-green-600';
-                if (f === 'L') color = 'bg-red-600';
+                else if (f === 'L') color = 'bg-red-600';
                 return `<span class="${color} w-8 h-8 flex items-center justify-center text-sm font-bold rounded text-white shadow ring-1 ring-white/10">${f}</span>`;
             }).join('')}
                                     </div>
                                 </td>
-                                <td class="py-4 text-center font-mono text-white/90 border-r ${theme.border} align-middle text-3xl font-bold">${team.matches || 0}</td>
-                                <td class="py-4 text-center font-mono text-green-400 font-bold border-r ${theme.border} align-middle text-3xl">${team.won || 0}</td>
-                                <td class="py-4 text-center font-mono text-red-400 font-bold border-r ${theme.border} align-middle text-3xl">${team.lost || 0}</td>
+                                <td class="py-4 text-center font-mono text-white/90 border-r ${theme.border} align-middle text-3xl font-bold">${team.mp || 0}</td>
+                                <td class="py-4 text-center font-mono text-green-400 font-bold border-r ${theme.border} align-middle text-3xl">${team.w || 0}</td>
+                                <td class="py-4 text-center font-mono text-red-400 font-bold border-r ${theme.border} align-middle text-3xl">${team.l || 0}</td>
                                 <td class="py-4 text-center text-white/90 border-r ${theme.border} align-middle text-3xl font-bold tracking-wide">${team.sets || '0:0'}</td>
                                 <td class="py-4 text-center font-black ${theme.pts} text-5xl drop-shadow-md border-r ${theme.border} align-middle">${team.pts || 0}</td>
                             </tr>`;
@@ -597,7 +750,7 @@ export const Volleyball = {
                 </table>
                 <div class="w-full max-w-[1000px] flex items-stretch justify-between gap-4">
                     <!-- FOOTER LEGEND (Left) -->
-                    <div class="w-full bg-black/40 rounded-lg p-5 border border-white/10 backdrop-blur-sm flex flex-col justify-center gap-3">
+                    <div class="flex-1 bg-black/40 rounded-lg p-5 border border-white/10 backdrop-blur-sm flex flex-col justify-center gap-3">
                         <div class="flex items-center gap-8 text-xl text-white/90 mb-1 font-bold">
                             <div class="flex items-center gap-3"><div class="w-5 h-5 bg-green-500 rounded-sm"></div> <span class="uppercase tracking-wider">Final Four</span></div>
                             <div class="flex items-center gap-3"><div class="w-5 h-5 bg-red-600 rounded-sm"></div> <span class="uppercase tracking-wider">Degradasi / Out</span></div>
@@ -610,10 +763,17 @@ export const Volleyball = {
                             <span>PTS: Poin</span>
                         </div>
                     </div>
+                    
+                    ${dots ? `<div class="flex items-center gap-3 px-8 bg-black/40 rounded-lg border border-white/10 backdrop-blur-sm">${dots}</div>` : ''}
                 </div>
-                ${t.channelLogo ? `<div class="absolute bottom-4 right-10 opacity-90 pointer-events-none z-40"><img src="${t.channelLogo}" class="h-28 object-contain drop-shadow-2xl"></div>` : ''}
             </div>
         `;
+    },
+
+    goToPage(idx) {
+        this.data.standingsPage = idx;
+        this.data.resultsPage = idx;
+        this.renderView();
     },
 
     _renderSchedule(view, themeObj) {
@@ -786,24 +946,33 @@ export const Volleyball = {
 
     _renderResults(view, themeObj) {
         const t = this.data;
-        const theme = this.THEMES[t.theme] || this.THEMES['blue'];
         if (!t.results || !t.results.length) {
             view.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-40">
-                <i class="fas fa-volleyball-ball text-[120px] mb-6"></i>
+                <i class="fas fa-trophy text-[120px] mb-6"></i>
                 <p class="text-[48px] font-bold uppercase">Hasil Kosong</p>
                 <p class="text-[32px] mt-2">Gunakan ✨ Magic Paste</p>
             </div>`; return;
         }
 
         const renderLogo = (url) => {
-            if (!url) return '<div class="w-[100px] h-[100px] rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center border-2 border-white/20"><i class="fas fa-volleyball-ball text-white/40 text-[50px]"></i></div>';
+            if (!url) return '<div class="w-[80px] h-[80px] rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center border-2 border-white/20"><i class="fas fa-volleyball-ball text-white/40 text-[40px]"></i></div>';
             const encoded = url.startsWith('data:') ? url : url.split('/').map(s => encodeURIComponent(s)).join('/');
-            return `<img src="${encoded}" class="w-[100px] h-[100px] object-contain flex-shrink-0 drop-shadow-lg" onerror="this.style.display='none'">`;
+            return `<img src="${encoded}" class="w-[80px] h-[80px] object-contain flex-shrink-0" onerror="this.style.display='none'">`;
         };
 
-        view.innerHTML = `<div class="mb-8 space-y-6 pt-10">
-            ${t.results.map((m, i) => {
-            let cardClasses = 'bg-black/40 backdrop-blur-xl border-t border-b border-white/20 shadow-2xl py-8 px-5 relative overflow-hidden';
+        const rpp = this.RESULTS_PER_PAGE || 2;
+        const totalPages = Math.ceil(t.results.length / rpp);
+        const curPage = Math.min(t.resultsPage ?? 0, Math.max(0, totalPages - 1));
+        const pageResults = t.results.slice(curPage * rpp, (curPage + 1) * rpp);
+
+        const dots = totalPages > 1 ? Array.from({ length: totalPages }, (_, i) =>
+            `<div onclick="window.VolleyballModule.goToPage(${i})"
+                class="cursor-pointer w-5 h-5 rounded-full border-2 transition-all ${i === curPage ? 'bg-white border-white scale-125' : 'bg-transparent border-white/40 hover:border-white/70'}"></div>`
+        ).join('') : '';
+
+        view.innerHTML = `<div class="mb-8 space-y-6 pt-10 px-4 flex flex-col items-center">
+            ${pageResults.map((m, i) => {
+            let cardClasses = 'bg-black/40 backdrop-blur-xl border-t border-b border-white/20 shadow-2xl py-8 px-5 relative overflow-hidden rounded-2xl w-full max-w-[1000px] mb-4';
 
             const scoreBox = `<div class="flex items-center justify-center gap-6 mt-2 relative z-10 w-full mb-6 max-w-[500px] mx-auto">
                     <span class="text-[72px] font-black font-oswald text-white leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">${m.homeScore ?? 0}</span>
@@ -865,6 +1034,7 @@ export const Volleyball = {
                 </div>
             `;
         }).join('')}
+            ${dots ? `<div class="flex items-center gap-3 px-8 bg-black/40 rounded-lg border border-white/10 backdrop-blur-sm h-16 self-center">${dots}</div>` : ''}
         </div>`;
     },
 
