@@ -278,5 +278,15 @@
             "path": "assets/channel/logos/",
             "files": []
         }
+    },
+    "badminton": {
+        "logos": {
+            "path": "assets/competitions/",
+            "files": []
+        },
+        "backgrounds": {
+            "path": "assets/badminton/backgrounds/",
+            "files": []
+        }
     }
 }

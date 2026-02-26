@@ -227,9 +227,20 @@ export const SmartParser = {
             if (Array.isArray(m.scorers.away)) aScorers = m.scorers.away.map(s => typeof s === 'string' ? "⚽ " + s : '').filter(Boolean).join('\\n');
         }
 
+        const isINA = (name) => {
+            if (!name) return false;
+            const inaKeywords = ['(INA)', 'Indonesia', 'INA/', '/INA', 'Jonatan Christie', 'Anthony Ginting', 'Fajar Alfian', 'Muhammad Rian', 'Apriyani Rahayu', 'Siti Fadia', 'Gregoria Mariska', 'Leo Rolly', 'Daniel Marthin', 'Bagas Maulana', 'Muhammad Shohibul', 'Hendra Setiawan', 'Mohammad Ahsan'];
+            return inaKeywords.some(k => name.toLowerCase().includes(k.toLowerCase()));
+        };
+
+        const home = m.home ?? m.homeTeam ?? '';
+        const away = m.away ?? m.awayTeam ?? '';
+
         return {
-            date: m.date ?? '', time: m.time ?? '', home: m.home ?? m.homeTeam ?? '',
-            away: m.away ?? m.awayTeam ?? '', venue: m.venue ?? m.stadium ?? '',
+            date: m.date ?? '', time: m.time ?? '', home: home,
+            away: away, venue: m.venue ?? m.stadium ?? '',
+            category: m.category ?? 'MS', // MS, WS, MD, WD, XD
+            isIndonesia: m.isIndonesia ?? (isINA(home) || isINA(away)),
             channel: m.channel ?? m.tv ?? '', homeScore: m.homeScore ?? null, awayScore: m.awayScore ?? null,
             setScores: m.setScores ?? m.sets ?? '',
             homeScorers: hScorers, awayScorers: aScorers,

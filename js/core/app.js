@@ -5,6 +5,7 @@
 
 import { Football } from '../sports/football.js';
 import { Volleyball } from '../sports/volleyball.js';
+import { Badminton } from '../sports/badminton.js';
 
 export const App = {
     currentSport: null,
@@ -15,6 +16,7 @@ export const App = {
         this.modules = {
             football: Football,
             volleyball: Volleyball,
+            badminton: Badminton,
         };
 
         // Sport Tab clicks
