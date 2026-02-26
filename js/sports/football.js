@@ -236,14 +236,16 @@ export const Football = {
     },
 
     // ============================================================
-    mount() {
+    async mount() {
         window.FootballModule = this;
         window.CurrentSportModule = this;
+
+        await DB.init();
+        await this._loadSavedBgs();
+
         this.renderControls();
         this.renderView();
-        DB.init().then(async () => {
-            await this._loadSavedBgs();
-        });
+
         // Init AssetRegistry (loads manifest.json once)
         AssetRegistry.init().then(() => {
             console.log('[Football] AssetRegistry ready');
@@ -309,6 +311,14 @@ export const Football = {
         'bhayangkara': 'fc bhayangkara',
         'psbs': 'psbs biak',
         'psbs biak numfor': 'psbs biak',
+        // New Champions/La Liga Aliases
+        'bodo glimt': 'bodo glimt',
+        'bodø/glimt': 'bodo glimt',
+        'villarreal': 'villareal',
+        'villa real': 'villareal',
+        'alaves': 'alaves',
+        'deportivo alaves': 'alaves',
+        'd. alaves': 'alaves',
     },
 
     async _autoAssignLogos(standings) {
@@ -321,7 +331,7 @@ export const Football = {
         }
         if (!allLogos.length) { console.warn('[AutoLogo] No logos in AssetRegistry'); return; }
 
-        const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, '');
 
         for (const row of standings) {
             if (row.logo) continue;
@@ -566,16 +576,22 @@ export const Football = {
 
                 <!-- BG: Dropdown + Upload -->
                 <div>
-                    <label class="block text-[9px] text-gray-400 mb-0.5">Background</label>
+                    <label class="block text-[9px] text-gray-400 mb-0.5">Background Image</label>
                     <!-- Static backgrounds dropdown -->
                     <select id="inpBgSelect" onchange="window.FootballModule.onBgSelect(event)"
                         class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-xs text-white mb-1">
                         <option value="">-- Tidak ada --</option>
-                        ${AssetRegistry.getBackgrounds('football').map(bg =>
+                        <optgroup label="Aset Bawaan">
+                            ${AssetRegistry.getBackgrounds('football').map(bg =>
             `<option value="${bg.url}" ${t.bgImage === bg.url ? 'selected' : ''}>${bg.name}</option>`
         ).join('')}
-                        ${t.bgImage && !AssetRegistry.getBackgrounds('football').find(b => b.url === t.bgImage)
-                ? `<option value="${t.bgImage}" selected>Upload kustom</option>` : ''}
+                        </optgroup>
+                        ${Object.keys(t.savedBackgrounds || {}).length > 0 ? `
+                        <optgroup label="Upload Kustom">
+                            ${Object.keys(t.savedBackgrounds).map(id => `
+                                <option value="db:${id}" ${t.bgImage === 'db:' + id ? 'selected' : ''}>Kustom ${id}</option>
+                            `).join('')}
+                        </optgroup>` : ''}
                     </select>
                     <!-- Opacity slider -->
                     <input type="range" id="inpBgOpacity" min="0" max="1" step="0.05" value="${t.bgOpacity}"
@@ -585,9 +601,14 @@ export const Football = {
                     <div class="flex gap-1">
                         <button onclick="document.getElementById('inpBgFile').click()"
                             class="flex-1 bg-gray-600 hover:bg-gray-500 text-white text-[9px] py-1 rounded">
-                            <i class="fas fa-upload mr-1"></i>Upload BG</button>
+                            <i class="fas fa-upload mr-1"></i>Upload BG Baru</button>
+                        ${t.bgImage.startsWith('db:') ? `
+                        <button onclick="window.FootballModule.deleteBg('${t.bgImage.replace('db:', '')}')"
+                            class="bg-red-800/60 hover:bg-red-700/60 text-red-300 px-2 rounded text-[9px]">✕</button>
+                        ` : `
                         <button onclick="window.FootballModule.setStaticBg('');window.FootballModule.renderControls()"
                             class="bg-gray-600 hover:bg-gray-500 text-red-400 text-[9px] px-2 rounded">✕</button>
+                        `}
                     </div>
                     <input id="inpBgFile" type="file" accept="image/*" class="hidden" onchange="window.FootballModule.handleBgUpload(this)">
                 </div>
@@ -622,8 +643,8 @@ export const Football = {
                 <select id="inpCssTheme" onchange="window.FootballModule.applyTheme(this.value)"
                     class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-xs text-white">
                     ${this.CSS_THEMES.map(th =>
-                    `<option value="${th.key}" ${(t.cardTheme || 'none') === th.key ? 'selected' : ''}>${th.label}</option>`
-                ).join('')}
+            `<option value="${th.key}" ${(t.cardTheme || 'none') === th.key ? 'selected' : ''}>${th.label}</option>`
+        ).join('')}
                 </select>
             </div>
 
@@ -1019,15 +1040,28 @@ export const Football = {
         reader.readAsDataURL(file);
     },
 
-    handleBgUpload(input) {
+    async handleBgUpload(input) {
         const file = input.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            this.data.bgImage = e.target.result;
+        reader.onload = async (e) => {
+            const id = Date.now().toString();
+            await DB.saveBackground(id, e.target.result);
+            await this._loadSavedBgs();
+            this.data.bgImage = 'db:' + id;
+            this.renderControls();
             this.renderView();
         };
         reader.readAsDataURL(file);
+    },
+
+    async deleteBg(id) {
+        if (!confirm('Hapus background ini?')) return;
+        await DB._delete('backgrounds', id);
+        await this._loadSavedBgs();
+        if (this.data.bgImage === 'db:' + id) this.data.bgImage = '';
+        this.renderControls();
+        this.renderView();
     },
 
     async _loadSavedBgs() {
@@ -1055,10 +1089,14 @@ export const Football = {
             // User-uploaded BG image on top
             bgImgEl.style.opacity = t.bgOpacity;
             if (t.bgImage) {
-                // Encode URL to handle filenames with spaces and special chars
-                const encodedBg = t.bgImage.startsWith('data:')
-                    ? t.bgImage
-                    : t.bgImage.split('/').map(seg => encodeURIComponent(seg)).join('/');
+                let bgUrl = t.bgImage;
+                if (bgUrl.startsWith('db:')) {
+                    const id = bgUrl.replace('db:', '');
+                    bgUrl = (t.savedBackgrounds && t.savedBackgrounds[id]) ? t.savedBackgrounds[id] : '';
+                }
+                const encodedBg = bgUrl.startsWith('data:')
+                    ? bgUrl
+                    : bgUrl.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 bgImgEl.style.backgroundImage = `url("${encodedBg}")`;
                 bgImgEl.style.backgroundSize = 'cover';
                 bgImgEl.style.backgroundPosition = 'center';

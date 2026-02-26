@@ -91,20 +91,10 @@ export const Volleyball = {
             { pos: 4, name: "Palembang BSB", mp: 10, w: 5, l: 5, sets: "18:18", pts: 15, form: ["W", "L", "L", "W", "L"], logo: '' }
         ],
         schedule: [
-            {
-                date: "SABTU, 10 MEI 2026",
-                matches: [
-                    { time: "14:00", home: "Kudus Sukun Badak", away: "Jakarta Garuda", venue: "GOR Ken Arok", channel: "MOJI TV", homeLogo: '', awayLogo: '' }
-                ]
-            }
+            { date: "SABTU, 10 MEI 2026", time: "14:00", home: "Kudus Sukun Badak", away: "Jakarta Garuda", venue: "GOR Ken Arok", channel: "MOJI TV", homeLogo: '', awayLogo: '' }
         ],
         results: [
-            {
-                date: "JUMAT, 9 MEI 2026",
-                matches: [
-                    { time: "16:00", home: "Jakarta LavAni", away: "Jakarta STIN BIN", homeScore: 3, awayScore: 1, setScores: "25-23, 20-25, 25-21, 25-19", venue: "GOR Ken Arok", homeLogo: '', awayLogo: '' }
-                ]
-            }
+            { date: "JUMAT, 9 MEI 2026", time: "16:00", home: "Jakarta LavAni", away: "Jakarta STIN BIN", homeScore: 3, awayScore: 1, setScores: "25-23, 20-25, 25-21, 25-19", venue: "GOR Ken Arok", homeLogo: '', awayLogo: '' }
         ],
         homeLineup: [],
         awayLineup: []
@@ -114,16 +104,11 @@ export const Volleyball = {
         console.log("[VolleyballModule] Mounting...");
         window.VolleyballModule = this;
         window.CurrentSportModule = this; // Global reference for shared UI events
+        window.addEventListener('magic-paste', (e) => this.applyMagicPaste(e.detail.input));
 
+        await DB.init();
         await this._loadSavedBgs();
 
-        // Hydrate default logos
-        this.data.leagueLogo = AssetRegistry.getLeagueBadge('volleyball', this.data.title) || '';
-        const chs = AssetRegistry.getChannelLogos();
-        this.data.channelLogo = chs.length ? chs[0].url : '';
-        await this._autoAssignLogos(this.data.standings);
-
-        this.startPageLoop();
         this.renderControls();
         this.renderView();
     },
@@ -190,18 +175,24 @@ export const Volleyball = {
         'bin samator': 'samator',
         'falcons': 'falcons',
         'jakarta falcons': 'falcons',
-        'electrick': 'jakarta elektrik pln',
-        'elektrik': 'jakarta elektrik pln',
-        'pln': 'jakarta elektrik pln',
+        'electrick': 'jakarta elektrik',
+        'elektrik': 'jakarta elektrik',
+        'pln': 'jakarta elektrik',
         'petrokimia': 'gresik petrokimia',
         'pupuk indonesia': 'gresik petrokimia',
-        'bank bjb': 'bandung bjb tandamata',
-        'tandamata': 'bandung bjb tandamata',
-        'popsivo': 'jakarta popsivo polwan',
-        'polwan': 'jakarta popsivo polwan',
-        'pertamina': 'jakarta pertamina enduro',
-        'enduro': 'jakarta pertamina enduro',
-        'fastron': 'jakarta pertamina enduro',
+        'bank bjb': 'bandung bjb',
+        'tandamata': 'bandung bjb',
+        'bjb': 'bandung bjb',
+        'popsivo': 'jakarta popsivo',
+        'polwan': 'jakarta popsivo',
+        'pertamina': 'jakarta pertamina',
+        'enduro': 'jakarta pertamina',
+        'fastron': 'jakarta pertamina',
+        'livin': 'jakarta livin mandiri',
+        'mandiri': 'jakarta livin mandiri',
+        'lavani': 'lavani',
+        'jakarta lavani': 'lavani',
+        'proliga': 'proliga',
     },
 
     async _autoAssignLogos(teamArray) {
@@ -214,7 +205,7 @@ export const Volleyball = {
         }
         if (!allLogos.length) { console.warn('[Volleyball-AutoLogo] No logos in AssetRegistry'); return; }
 
-        const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, '');
 
         for (const t of teamArray) {
             if (t.logo) continue;
@@ -337,13 +328,16 @@ export const Volleyball = {
                     <div class="border-t border-gray-600 pt-2">
                         <label class="block text-[10px] text-gray-400 mb-0.5">Card Style (Jadwal/Hasil)</label>
                         <select id="inpScheduleStyle" onchange="window.VolleyballModule.updateData(event)" class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-[11px] text-white">
-                            <option value="broadcast" ${t.scheduleCardStyle === 'broadcast' ? 'selected' : ''}>Broadcast (Pita & Ribbon)</option>
-                            <option value="glass" ${t.scheduleCardStyle === 'glass' ? 'selected' : ''}>Glassmorphism Transparan</option>
+                            <option value="broadcast" ${t.scheduleCardStyle === 'broadcast' ? 'selected' : ''}>Broadcast Ribbon</option>
+                            <option value="tournament" ${t.scheduleCardStyle === 'tournament' ? 'selected' : ''}>Tournament Ribbon</option>
+                            <option value="glass" ${t.scheduleCardStyle === 'glass' ? 'selected' : ''}>Glassmorphism</option>
                             <option value="gradient" ${t.scheduleCardStyle === 'gradient' ? 'selected' : ''}>Gradient Modern</option>
-                            <option value="neon" ${t.scheduleCardStyle === 'neon' ? 'selected' : ''}>Neon Cyberpunk</option>
-                            <option value="minimal" ${t.scheduleCardStyle === 'minimal' ? 'selected' : ''}>Minimalist Bersih</option>
-                            <option value="dark" ${t.scheduleCardStyle === 'dark' ? 'selected' : ''}>Dark Mode Klasik</option>
-                            <option value="tournament" ${t.scheduleCardStyle === 'tournament' ? 'selected' : ''}>Tournament Ribbon (New)</option>
+                            <option value="neon" ${t.scheduleCardStyle === 'neon' ? 'selected' : ''}>Neon Cyber</option>
+                            <option value="retro" ${t.scheduleCardStyle === 'retro' ? 'selected' : ''}>Retro Scoreboard</option>
+                            <option value="modern-clean" ${t.scheduleCardStyle === 'modern-clean' ? 'selected' : ''}>Modern Clean</option>
+                            <option value="luxury" ${t.scheduleCardStyle === 'luxury' ? 'selected' : ''}>Luxury Gold</option>
+                            <option value="minimal" ${t.scheduleCardStyle === 'minimal' ? 'selected' : ''}>Minimalist</option>
+                            <option value="dark" ${t.scheduleCardStyle === 'dark' ? 'selected' : ''}>Dark Classic</option>
                         </select>
                     </div>
                 ` : ''}
@@ -397,15 +391,34 @@ export const Volleyball = {
 
                 <!-- Background & Theme Selection (Dropdowns) -->
                 <div class="border-t border-gray-600 pt-2 grid grid-cols-2 gap-2">
+                    <!-- Background & Theme Settings -->
                     <div>
                         <label class="block text-[10px] text-gray-400 mb-0.5">Background Image</label>
-                        <select id="inpBgImage" class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-[10px] text-white" onchange="window.VolleyballModule.updateData(event)">
-                            <option value="">None / Polos</option>
-                            ${AssetRegistry.getBackgrounds('volleyball').map(bg => {
+                        <select id="inpBgImage" class="w-full bg-gray-900 border border-gray-500 rounded px-2 py-1 text-[10px] text-white outline-none" onchange="window.VolleyballModule.updateData(event)">
+                            <option value="">None / Gradient</option>
+                            <optgroup label="Aset Bawaan">
+                                ${AssetRegistry.getBackgrounds('volleyball').map(bg => {
             const filename = bg.url.split('/').pop();
             return `<option value="${bg.url}" ${t.bgImage === bg.url ? 'selected' : ''}>${filename}</option>`;
         }).join('')}
+                            </optgroup>
+                            ${Object.keys(t.savedBackgrounds || {}).length > 0 ? `
+                            <optgroup label="Upload Kustom">
+                                ${Object.keys(t.savedBackgrounds).map(id => `
+                                    <option value="db:${id}" ${t.bgImage === 'db:' + id ? 'selected' : ''}>Kustom ${id}</option>
+                                `).join('')}
+                            </optgroup>` : ''}
                         </select>
+                        <div class="mt-2 flex gap-1">
+                            <button onclick="document.getElementById('inpBgFileVoli').click()"
+                                class="flex-1 bg-gray-600 hover:bg-gray-500 text-white text-[9px] py-1 rounded">
+                                <i class="fas fa-upload mr-1"></i>Upload BG Baru</button>
+                            <input id="inpBgFileVoli" type="file" accept="image/*" class="hidden" onchange="window.VolleyballModule.handleBgUpload(this)">
+                            ${t.bgImage.startsWith('db:') ? `
+                            <button onclick="window.VolleyballModule.deleteBg('${t.bgImage.replace('db:', '')}')"
+                                class="bg-red-800/60 hover:bg-red-700/60 text-red-300 px-2 rounded text-[9px]">✕</button>
+                            ` : ''}
+                        </div>
                     </div>
                     <div>
                         <label class="block text-[10px] text-gray-400 mb-0.5">Preset Tema Visual</label>
@@ -449,7 +462,10 @@ export const Volleyball = {
         else if (id === 'inpAnimStag') this.data.animStagger = parseFloat(value);
         else if (id === 'inpScheduleStyle') this.data.scheduleCardStyle = value;
         else if (id === 'inpBgOpacity') this.data.bgOpacity = parseFloat(value);
-        else if (id === 'inpBgImage') this.data.bgImage = value;
+        else if (id === 'inpBgImage') {
+            this.data.bgImage = value;
+            this.renderControls(); // to update delete button visibility
+        }
         else if (id === 'inpCardTheme') this.applyCardTheme(value);
         else if (id === 'chkAnimLoop') {
             this.data.animLoop = checked;
@@ -497,12 +513,43 @@ export const Volleyball = {
         }
     },
 
+    async handleBgUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const id = Date.now().toString();
+            await DB.saveBackground(id, e.target.result);
+            await this._loadSavedBgs();
+            this.data.bgImage = 'db:' + id;
+            this.renderControls();
+            this.renderView();
+        };
+        reader.readAsDataURL(file);
+    },
+
+    async deleteBg(id) {
+        if (!confirm('Hapus background ini?')) return;
+        await DB._delete('backgrounds', id);
+        await this._loadSavedBgs();
+        if (this.data.bgImage === 'db:' + id) this.data.bgImage = '';
+        this.renderControls();
+        this.renderView();
+    },
+
     async applySmartPaste() {
         const raw = document.getElementById('sidebar-paste-input').value;
-        if (!raw) return;
-        const logos = await DB.getAllLogos() || {};
-        const result = SmartParser.parse(raw, { sport: 'volleyball', logos });
-        if (!result.success) { alert(`❌ ${result.message}`); return; }
+        if (raw) this.applyMagicPaste(raw);
+    },
+
+    async applyMagicPaste(rawInput) {
+        if (!rawInput) return;
+        const result = SmartParser.parse(rawInput, {
+            sport: 'volleyball',
+            mode: this.data.currentView
+        });
+
+        if (!result.success) { alert(`❌ Gagal parse:\n${result.message}`); return; }
 
         const { schema } = result;
         if (schema.title) {
@@ -510,18 +557,71 @@ export const Volleyball = {
             const badgeUrl = AssetRegistry.getLeagueBadge('volleyball', schema.title);
             if (badgeUrl) this.data.leagueLogo = badgeUrl;
         }
-        if (schema.mode) this.data.currentView = schema.mode;
-        if (schema.matches && schema.matches.length) {
-            if (schema.mode === 'schedule') this.data.schedule = schema.matches;
-            if (schema.mode === 'results') this.data.results = schema.matches;
-        }
-        if (schema.standings && schema.standings.length) {
-            this.data.standings = schema.standings;
+
+        if (schema.standings?.length) {
+            this.data.standings = schema.standings.map(r => ({ ...r }));
             await this._autoAssignLogos(this.data.standings);
+            this.data.currentView = 'standings';
         }
-        if (schema.homeLineup) {
-            this.data.homeLineup = schema.homeLineup;
-            this.data.awayLineup = schema.awayLineup || [];
+
+        if (schema.matches?.length) {
+            const isResults = schema.mode === 'results' || schema.matches.some(m => m.homeScore !== null && m.homeScore !== '-');
+            let targetArray = schema.matches.map(m => ({
+                ...m,
+                homeLogo: '', awayLogo: '',
+                homeScore: m.homeScore ?? '-', awayScore: m.awayScore ?? '-',
+                time: m.time || '', date: m.date || '', venue: m.venue || '', channel: m.channel || '',
+                setScores: m.setScores || ''
+            }));
+
+            // Auto-assign logos for matches
+            const homeTeams = targetArray.map(m => ({ name: m.home, logo: '' }));
+            const awayTeams = targetArray.map(m => ({ name: m.away, logo: '' }));
+            await this._autoAssignLogos(homeTeams);
+            await this._autoAssignLogos(awayTeams);
+
+            targetArray.forEach((m, i) => {
+                m.homeLogo = homeTeams[i].logo;
+                m.awayLogo = awayTeams[i].logo;
+            });
+
+            if (isResults) {
+                this.data.results = targetArray;
+                this.data.currentView = 'results';
+            } else {
+                this.data.schedule = targetArray;
+                this.data.currentView = 'schedule';
+            }
+        }
+
+        if (schema.mode === 'lineup' && schema.matches?.length > 0) {
+            const m = schema.matches[0];
+            const lineupMatch = {
+                ...m,
+                homeLogo: '', awayLogo: '',
+                homeLineup: m.homeLineup || [],
+                awayLineup: m.awayLineup || []
+            };
+
+            // Auto-assign logos for the lineup match
+            const teams = [{ name: lineupMatch.home, logo: '' }, { name: lineupMatch.away, logo: '' }];
+            await this._autoAssignLogos(teams);
+            lineupMatch.homeLogo = teams[0].logo;
+            lineupMatch.awayLogo = teams[1].logo;
+
+            // Use results[0] as the primary source for the Lineup view
+            this.data.results = [lineupMatch];
+            this.data.currentView = 'lineup';
+        } else if (schema.homeLineup?.length) {
+            // Fallback for direct homeLineup root (if any)
+            const fallbackMatch = {
+                home: 'Home Team', away: 'Away Team',
+                homeLogo: '', awayLogo: '',
+                homeLineup: schema.homeLineup,
+                awayLineup: schema.awayLineup || []
+            };
+            this.data.results = [fallbackMatch];
+            this.data.currentView = 'lineup';
         }
 
         this.renderControls();
@@ -550,9 +650,14 @@ export const Volleyball = {
 
             bgImgEl.style.opacity = t.bgOpacity;
             if (t.bgImage) {
-                const encodedBg = t.bgImage.startsWith('data:')
-                    ? t.bgImage
-                    : t.bgImage.split('/').map(seg => encodeURIComponent(seg)).join('/');
+                let bgUrl = t.bgImage;
+                if (bgUrl.startsWith('db:')) {
+                    const id = bgUrl.replace('db:', '');
+                    bgUrl = (t.savedBackgrounds && t.savedBackgrounds[id]) ? t.savedBackgrounds[id] : '';
+                }
+                const encodedBg = bgUrl.startsWith('data:')
+                    ? bgUrl
+                    : bgUrl.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 bgImgEl.style.backgroundImage = `url("${encodedBg}")`;
                 bgImgEl.style.backgroundSize = 'cover';
                 bgImgEl.style.backgroundPosition = 'center';
@@ -635,11 +740,11 @@ export const Volleyball = {
                     style="background:rgba(255,255,255,0.08);backdrop-filter:blur(18px);border:1.5px solid rgba(255,255,255,0.15);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
                     ${leagueLogoEncoded ? `<img src="${leagueLogoEncoded}" class="h-28 w-28 object-contain drop-shadow-2xl flex-shrink-0">` : ''}
                     <div>
-                        <div class="flex items-center gap-2 mb-2">
-                             <span class="${catColor} text-white px-4 py-1 text-sm font-bold rounded-full uppercase tracking-wider shadow-lg border border-white/20">
+                        <div class="flex items-center gap-3 mb-3">
+                             <span class="${catColor} text-white px-6 py-2 text-2xl font-bold rounded-full uppercase tracking-wider shadow-lg border border-white/20">
                                  ${t.category || 'UMUM'}
                              </span>
-                             <span class="text-white text-sm font-oswald tracking-widest bg-white/10 px-4 py-1 rounded-full border border-white/10 shadow-lg">${t.season}</span>
+                             <span class="text-white text-2xl font-oswald tracking-widest bg-white/10 px-6 py-2 rounded-full border border-white/10 shadow-lg">${t.season}</span>
                         </div>
                         <h1 class="font-oswald font-black text-white leading-none drop-shadow-lg tracking-wide uppercase flex flex-col justify-center animate-breathe">
                             <span class="text-[28px] text-yellow-400 mb-1 tracking-normal drop-shadow-md">${titlePrefix}</span>
@@ -787,8 +892,6 @@ export const Volleyball = {
             </div>`; return;
         }
 
-        const style = t.scheduleCardStyle || 'broadcast';
-
         // Group by date
         const grouped = {};
         t.schedule.forEach(m => {
@@ -797,150 +900,10 @@ export const Volleyball = {
             grouped[key].push(m);
         });
 
-        const renderLogo = (url) => {
-            if (!url) return '<div class="w-[80px] h-[80px] rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center border-2 border-white/20"><i class="fas fa-volleyball-ball text-white/40 text-[40px]"></i></div>';
-            const encoded = url.startsWith('data:') ? url : url.split('/').map(s => encodeURIComponent(s)).join('/');
-            return `<img src="${encoded}" class="w-[80px] h-[80px] object-contain flex-shrink-0" onerror="this.style.display='none'">`;
-        };
-
         view.innerHTML = Object.entries(grouped).map(([date, matches]) => `
             <div class="mb-8 text-center pt-10">
                 <div class="inline-block ${theme.header} px-8 py-3 rounded-xl text-[28px] font-oswald font-black uppercase mb-6 tracking-wide shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-2 border-white/20">${date}</div>
-                ${matches.map((m, i) => {
-            let cardClasses = '';
-            let innerHtml = '';
-
-            const timeInfo = m.time ? `<div class="bg-black/60 text-white px-5 py-2 rounded-md font-roboto text-[26px] font-bold tracking-wider">${m.time}</div>` : '';
-            const venueInfo = m.venue ? `<p class="text-[26px] text-gray-300 flex items-center gap-2"><i class="fas fa-location-arrow text-yellow-400"></i>${m.venue}</p>` : '';
-            const channelInfo = m.channel ? `<p class="text-[26px] text-gray-300 flex items-center gap-2"><i class="fas fa-tv text-blue-400"></i>${m.channel}</p>` : '';
-            const extraInfo = (venueInfo || channelInfo) ? `<div class="mt-4 pt-3 border-t border-white/10 flex justify-center gap-8">${venueInfo}${channelInfo}</div>` : '';
-
-            if (style === 'broadcast') {
-                cardClasses = 'bg-gradient-to-r from-blue-900/90 via-blue-800/90 to-blue-900/90 border-l-8 border-yellow-400 shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-                innerHtml = `
-                            <div class="flex items-center justify-between gap-6 px-4">
-                                <div class="flex-1 flex items-center justify-end gap-5">
-                                    <span class="text-[44px] font-black font-oswald text-right uppercase tracking-wide drop-shadow-md text-white">${m.home}</span>
-                                    ${renderLogo(m.homeLogo)}
-                                </div>
-                                <div class="flex flex-col items-center w-[180px]">
-                                    <div class="bg-yellow-400 text-black font-black text-[32px] italic px-6 py-1.5 rounded-sm shadow-md rotate-[-3deg] transform -translate-y-2 mb-3">VS</div>
-                                    ${timeInfo}
-                                </div>
-                                <div class="flex-1 flex items-center justify-start gap-5">
-                                    ${renderLogo(m.awayLogo)}
-                                    <span class="text-[44px] font-black font-oswald uppercase tracking-wide drop-shadow-md text-white">${m.away}</span>
-                                </div>
-                            </div>
-                            ${extraInfo}
-                        `;
-            } else if (style === 'tournament') {
-                cardClasses = 'bg-transparent p-0 mb-8 !overflow-visible';
-                innerHtml = `
-                            <div class="relative w-[104%] -mx-[2%] h-[140px] flex items-center justify-center">
-                                <div class="absolute inset-0 bg-gradient-to-b from-[#e0e0e0] to-[#b0b0b0]" style="clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%); shadow-[0_10px_20px_rgba(0,0,0,0.5)]"></div>
-                                <div class="absolute inset-1 bg-gradient-to-b from-white to-[#d0d0d0]" style="clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);"></div>
-                                <div class="absolute inset-y-0 left-0 w-1/2 flex items-center justify-end pl-[140px] pr-[100px] gap-4">
-                                    <span class="text-[36px] font-black font-oswald text-[#2c3e50] uppercase tracking-wider drop-shadow-sm leading-[1.1] text-right">${m.home}</span>
-                                </div>
-                                <div class="absolute inset-y-0 right-0 w-1/2 flex items-center justify-start pr-[140px] pl-[100px] gap-4">
-                                    <span class="text-[36px] font-black font-oswald text-[#2c3e50] uppercase tracking-wider drop-shadow-sm leading-[1.1] text-left">${m.away}</span>
-                                </div>
-                                <div class="absolute z-10 w-[90px] h-[90px] rounded-full bg-gradient-to-b from-[#2980b9] to-[#2c3e50] border-[4px] border-white shadow-lg flex items-center justify-center">
-                                    <span class="text-white font-black text-[38px] font-oswald">VS</span>
-                                </div>
-                                <div class="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-[120px] h-[120px] rounded-full bg-white shadow-xl p-2 flex items-center justify-center border-2 border-gray-200">${renderLogo(m.homeLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full')}</div>
-                                <div class="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-[120px] h-[120px] rounded-full bg-white shadow-xl p-2 flex items-center justify-center border-2 border-gray-200">${renderLogo(m.awayLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full')}</div>
-                            </div>
-                            <div class="relative w-[75%] mx-auto h-[60px] -mt-5 z-0 flex items-center justify-center">
-                                <div class="absolute inset-0 bg-gradient-to-b from-[#2c3e50] to-[#1a252f]" style="clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);"></div>
-                                <div class="relative z-10 text-white font-bold font-roboto text-[22px] tracking-wide text-center pt-2">
-                                    ${m.time ? `Pukul ${m.time} WIB` : ''}${m.time && m.venue ? ' &nbsp;|&nbsp; ' : ''}${m.venue ? m.venue : ''}${(!m.time && !m.venue && m.channel) ? m.channel : (m.channel ? ' &nbsp;-&nbsp; ' + m.channel : '')}
-                                </div>
-                            </div>
-                        `;
-            } else if (style === 'glass') {
-                cardClasses = 'bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl';
-                innerHtml = `
-                            <div class="flex items-center justify-between gap-6 px-4">
-                                <div class="flex-1 flex items-center justify-end gap-5">
-                                    <span class="text-[42px] font-bold font-oswald text-right uppercase drop-shadow-lg text-white">${m.home}</span>
-                                    ${renderLogo(m.homeLogo)}
-                                </div>
-                                <div class="flex flex-col items-center w-[160px]">
-                                    <div class="text-white/60 font-black text-[40px] font-oswald mb-2">VS</div>
-                                    ${timeInfo}
-                                </div>
-                                <div class="flex-1 flex items-center justify-start gap-5">
-                                    ${renderLogo(m.awayLogo)}
-                                    <span class="text-[42px] font-bold font-oswald uppercase drop-shadow-lg text-white">${m.away}</span>
-                                </div>
-                            </div>
-                            ${extraInfo}
-                        `;
-            } else if (style === 'gradient') {
-                cardClasses = 'bg-gradient-to-r from-blue-900/80 to-indigo-900/80 border border-blue-500/30 shadow-lg';
-                innerHtml = `
-                            <div class="flex items-center justify-between gap-6 px-4">
-                                <div class="flex-1 flex items-center justify-end gap-5">
-                                    <span class="text-[40px] font-bold font-oswald text-right uppercase text-blue-100">${m.home}</span>
-                                    ${renderLogo(m.homeLogo)}
-                                </div>
-                                <div class="flex flex-col items-center w-[160px] bg-black/30 py-3 px-2 rounded-2xl border border-white/5">
-                                    <div class="text-blue-300 font-bold text-[34px] mb-1">VS</div>
-                                    ${timeInfo}
-                                </div>
-                                <div class="flex-1 flex items-center justify-start gap-5">
-                                    ${renderLogo(m.awayLogo)}
-                                    <span class="text-[40px] font-bold font-oswald uppercase text-blue-100">${m.away}</span>
-                                </div>
-                            </div>
-                            ${extraInfo}
-                        `;
-            } else if (style === 'minimal') {
-                cardClasses = 'bg-transparent border-b border-white/20 pb-4 mb-6 rounded-none';
-                innerHtml = `
-                            <div class="flex items-center justify-between gap-6 px-4">
-                                <div class="flex-1 flex flex-col items-end">
-                                    <span class="text-[38px] font-normal font-oswald text-right uppercase tracking-wider text-white">${m.home}</span>
-                                </div>
-                                <div class="flex flex-col items-center w-[120px]">
-                                    ${m.time ? `<div class="text-white font-bold text-[32px] tracking-widest">${m.time}</div>` : ''}
-                                </div>
-                                <div class="flex-1 flex flex-col items-start">
-                                    <span class="text-[38px] font-normal font-oswald uppercase tracking-wider text-white">${m.away}</span>
-                                </div>
-                            </div>
-                            ${extraInfo}
-                        `;
-            } else { // dark
-                cardClasses = 'bg-gray-900 border border-gray-700 shadow-lg';
-                innerHtml = `
-                            <div class="flex items-center justify-between gap-6 px-4">
-                                <div class="flex-1 flex items-center justify-end gap-5">
-                                    <span class="text-[40px] font-bold font-oswald text-right uppercase text-gray-200">${m.home}</span>
-                                    ${renderLogo(m.homeLogo)}
-                                </div>
-                                <div class="flex flex-col items-center w-[160px]">
-                                    <div class="text-gray-500 font-bold text-[36px] mb-2">VS</div>
-                                    ${timeInfo}
-                                </div>
-                                <div class="flex-1 flex items-center justify-start gap-5">
-                                    ${renderLogo(m.awayLogo)}
-                                    <span class="text-[40px] font-bold font-oswald uppercase text-gray-200">${m.away}</span>
-                                </div>
-                            </div>
-                            ${extraInfo}
-                        `;
-            }
-
-            return `
-                    <div class="card-row rounded-3xl p-5 mb-8 ${cardClasses} ${t.animation}"
-                        style="animation-delay:${(i * t.animStagger).toFixed(2)}s; --anim-dur:${t.animDuration}s">
-                        ${innerHtml}
-                    </div>`;
-
-        }).join('')}
+                ${matches.map((m, i) => this._renderMatchCard(m, i, 'schedule')).join('')}
             </div>`).join('');
     },
 
@@ -954,12 +917,6 @@ export const Volleyball = {
             </div>`; return;
         }
 
-        const renderLogo = (url) => {
-            if (!url) return '<div class="w-[80px] h-[80px] rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center border-2 border-white/20"><i class="fas fa-volleyball-ball text-white/40 text-[40px]"></i></div>';
-            const encoded = url.startsWith('data:') ? url : url.split('/').map(s => encodeURIComponent(s)).join('/');
-            return `<img src="${encoded}" class="w-[80px] h-[80px] object-contain flex-shrink-0" onerror="this.style.display='none'">`;
-        };
-
         const rpp = this.RESULTS_PER_PAGE || 2;
         const totalPages = Math.ceil(t.results.length / rpp);
         const curPage = Math.min(t.resultsPage ?? 0, Math.max(0, totalPages - 1));
@@ -971,71 +928,317 @@ export const Volleyball = {
         ).join('') : '';
 
         view.innerHTML = `<div class="mb-8 space-y-6 pt-10 px-4 flex flex-col items-center">
-            ${pageResults.map((m, i) => {
-            let cardClasses = 'bg-black/40 backdrop-blur-xl border-t border-b border-white/20 shadow-2xl py-8 px-5 relative overflow-hidden rounded-2xl w-full max-w-[1000px] mb-4';
+            ${pageResults.map((m, i) => this._renderMatchCard(m, i, 'results')).join('')}
+            ${dots ? `<div class="flex items-center gap-3 px-8 bg-black/40 rounded-lg border border-white/10 backdrop-blur-sm h-16 self-center my-8">${dots}</div>` : ''}
+        </div>`;
+    },
 
-            const scoreBox = `<div class="flex items-center justify-center gap-6 mt-2 relative z-10 w-full mb-6 max-w-[500px] mx-auto">
-                    <span class="text-[72px] font-black font-oswald text-white leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">${m.homeScore ?? 0}</span>
-                    <span class="text-[48px] text-gray-400 font-black italic shadow-inner px-4 bg-black/60 rounded-lg">-</span>
-                    <span class="text-[72px] font-black font-oswald text-white leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">${m.awayScore ?? 0}</span>
-                </div>`;
+    _renderMatchCard(m, i, type = 'schedule') {
+        const t = this.data;
+        const style = t.scheduleCardStyle || 'broadcast';
+        const theme = this.THEMES[t.theme] || this.THEMES['blue'];
 
-            // Volleyball specific: Set Scores rendering mapping array of sets or string.
-            // Support for strings like "25-23, 19-25, 25-22"
-            let setScoresHtml = '';
-            if (m.setScores) {
-                const sets = typeof m.setScores === 'string' ? m.setScores.split(',').map(s => s.trim()).filter(Boolean) : m.setScores;
-                if (sets.length > 0) {
-                    setScoresHtml = `
-                       <div class="flex items-center justify-center gap-4 flex-wrap mt-2 mb-4 relative z-10">
-                           ${sets.map(set => `
-                               <div class="bg-blue-900/60 border border-blue-400/50 text-blue-100 px-5 py-2 rounded shadow-lg text-[22px] font-bold tracking-widest font-oswald">
-                                   ${set}
-                               </div>
-                           `).join('')}
-                       </div>
-                   `;
-                }
+        const renderLogo = (url) => {
+            if (!url) return '<div class="w-[80px] h-[80px] rounded-full bg-white/10 flex-shrink-0 flex items-center justify-center border-2 border-white/20"><i class="fas fa-volleyball-ball text-white/40 text-[40px]"></i></div>';
+            const encoded = url.startsWith('data:') ? url : url.split('/').map(s => encodeURIComponent(s)).join('/');
+            return `<img src="${encoded}" class="w-[80px] h-[80px] object-contain flex-shrink-0" onerror="this.style.display='none'">`;
+        };
+
+        const isResult = type === 'results';
+        const timeInfo = m.time ? `<div class="bg-black/60 text-white px-5 py-2 rounded-md font-roboto text-[26px] font-bold tracking-wider">${m.time}</div>` : '';
+        const dateInfo = (isResult && m.date) ? `<p class="text-[26px] text-gray-300 flex items-center gap-2"><i class="far fa-calendar-alt text-yellow-400"></i>${m.date}</p>` : '';
+        const venueInfo = m.venue ? `<p class="text-[26px] text-gray-300 flex items-center gap-2"><i class="fas fa-location-arrow text-yellow-400"></i>${m.venue}</p>` : '';
+        const channelInfo = m.channel ? `<p class="text-[26px] text-gray-300 flex items-center gap-2"><i class="fas fa-tv text-blue-400"></i>${m.channel}</p>` : '';
+        const extraInfo = (dateInfo || venueInfo || channelInfo) ? `<div class="mt-4 pt-3 border-t border-white/10 flex justify-center gap-8">${dateInfo}${venueInfo}${channelInfo}</div>` : '';
+        const scoreBox = isResult ? `
+            <div class="flex items-center justify-center gap-5">
+                <span class="text-[72px] font-black font-oswald text-white leading-none">${m.homeScore ?? 0}</span>
+                <span class="text-[32px] text-gray-400 font-black italic px-3 bg-black/40 rounded">-</span>
+                <span class="text-[72px] font-black font-oswald text-white leading-none">${m.awayScore ?? 0}</span>
+            </div>
+        ` : `<div class="bg-yellow-400 text-black font-black text-[32px] italic px-6 py-1.5 rounded-sm shadow-md rotate-[-3deg] transform -translate-y-2">VS</div>`;
+
+        let setScoresHtml = '';
+        if (isResult && m.setScores) {
+            const sets = typeof m.setScores === 'string' ? m.setScores.split(',').map(s => s.trim()).filter(Boolean) : m.setScores;
+            if (sets.length > 0) {
+                setScoresHtml = `
+                   <div class="flex items-center justify-center gap-4 flex-wrap mt-5 relative z-10">
+                       ${sets.map(set => `
+                           <div class="bg-blue-950/80 border-2 border-blue-400 text-white px-5 py-2 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.5)] text-[28px] font-black tracking-widest font-oswald min-w-[100px] text-center">
+                               ${set}
+                           </div>
+                       `).join('')}
+                   </div>
+               `;
             }
+        }
 
-            const dateInfo = m.date ? `<p class="text-[28px] font-bold text-white text-center mt-2 drop-shadow-lg tracking-widest uppercase opacity-90"><i class="far fa-calendar-alt text-yellow-400 mr-3"></i>${m.date}</p>` : '';
+        let cardClasses = '';
+        let innerHtml = '';
 
-            return `
-                <div class="rounded-3xl ${cardClasses} ${t.animation}" style="animation-delay:${(i * t.animStagger).toFixed(2)}s; --anim-dur:${t.animDuration}s">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                    <div class="flex items-center justify-between gap-6 w-full relative z-10">
-                        <div class="flex-1 flex flex-col items-center justify-center">
-                            ${renderLogo(m.homeLogo)}
-                            <span class="text-[42px] font-black font-oswald text-center uppercase tracking-wide drop-shadow-md text-white mt-4 leading-[1.1]">${m.home}</span>
-                        </div>
-                        
-                        <div class="w-[30%] flex flex-col items-center justify-center">
-                            <span class="bg-red-600 text-white font-oswald text-[22px] font-black px-6 py-1 rounded-sm uppercase tracking-[0.2em] shadow-lg mb-2 transform -skew-x-[15deg]">FULL SET</span>
-                            ${scoreBox}
-                        </div>
-                        
-                        <div class="flex-1 flex flex-col items-center justify-center">
-                            ${renderLogo(m.awayLogo)}
-                            <span class="text-[42px] font-black font-oswald text-center uppercase tracking-wide drop-shadow-md text-white mt-4 leading-[1.1]">${m.away}</span>
+        if (style === 'broadcast') {
+            cardClasses = 'bg-gradient-to-r from-blue-900/90 via-blue-800/90 to-blue-900/90 border-l-8 border-yellow-400 shadow-[0_8px_32px_rgba(0,0,0,0.5)] py-8 px-6';
+            innerHtml = `
+                <div class="flex items-center justify-between gap-6 px-4">
+                    <div class="flex-1 flex items-center justify-end gap-5">
+                        <span class="text-[44px] font-black font-oswald text-right uppercase tracking-wide drop-shadow-md text-white">${m.home}</span>
+                        ${renderLogo(m.homeLogo)}
+                    </div>
+                    <div class="flex flex-col items-center w-[220px]">
+                        ${scoreBox}
+                        ${!isResult ? timeInfo : ''}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-5">
+                        ${renderLogo(m.awayLogo)}
+                        <span class="text-[44px] font-black font-oswald uppercase tracking-wide drop-shadow-md text-white">${m.away}</span>
+                    </div>
+                </div>
+                ${setScoresHtml}
+                ${extraInfo}
+            `;
+        } else if (style === 'tournament') {
+            cardClasses = 'bg-transparent p-0 mb-12 !overflow-visible w-full max-w-[1000px] mx-auto';
+            const centerItem = isResult ? `<div class="text-white font-black text-[48px] font-oswald">${m.homeScore}-${m.awayScore}</div>` : `<span class="text-white font-black text-[38px] font-oswald">VS</span>`;
+            innerHtml = `
+                <div class="relative w-[104%] -mx-[2%] h-[140px] flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-b from-[#e0e0e0] to-[#b0b0b0]" style="clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%); shadow-[0_10px_20px_rgba(0,0,0,0.5)]"></div>
+                    <div class="absolute inset-1 bg-gradient-to-b from-white to-[#d0d0d0]" style="clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);"></div>
+                    <div class="absolute inset-y-0 left-0 w-1/2 flex items-center justify-end pl-[140px] pr-[100px] gap-4">
+                        <span class="text-[36px] font-black font-oswald text-[#2c3e50] uppercase tracking-wider drop-shadow-sm leading-[1.1] text-right">${m.home}</span>
+                    </div>
+                    <div class="absolute inset-y-0 right-0 w-1/2 flex items-center justify-start pr-[140px] pl-[100px] gap-4">
+                        <span class="text-[36px] font-black font-oswald text-[#2c3e50] uppercase tracking-wider drop-shadow-sm leading-[1.1] text-left">${m.away}</span>
+                    </div>
+                    <div class="absolute z-10 w-[110px] h-[110px] rounded-full bg-gradient-to-b from-[#2980b9] to-[#2c3e50] border-[4px] border-white shadow-lg flex items-center justify-center">
+                        ${centerItem}
+                    </div>
+                    <div class="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-[120px] h-[120px] rounded-full bg-white shadow-xl p-2 flex items-center justify-center border-2 border-gray-200">${renderLogo(m.homeLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full ')}</div>
+                    <div class="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-[120px] h-[120px] rounded-full bg-white shadow-xl p-2 flex items-center justify-center border-2 border-gray-200">${renderLogo(m.awayLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full ')}</div>
+                </div>
+                <div class="relative w-[75%] mx-auto h-[70px] -mt-5 z-0 flex flex-col items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-b from-[#2c3e50] to-[#1a252f]" style="clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);"></div>
+                    <div class="relative z-10 text-white font-bold font-roboto text-[22px] tracking-wide text-center pt-2">
+                        ${!isResult ? (m.time ? `Pukul ${m.time} WIB` : '') : (m.date || '')}${(!isResult && m.time && m.venue) ? ' &nbsp;|&nbsp; ' : ''}${m.venue ? m.venue : ''}
+                    </div>
+                </div>
+                ${setScoresHtml}
+            `;
+        } else if (style === 'glass') {
+            cardClasses = 'bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl py-8 px-6';
+            innerHtml = `
+                <div class="flex items-center justify-between gap-6 px-4">
+                    <div class="flex-1 flex items-center justify-end gap-5">
+                        <span class="text-[42px] font-bold font-oswald text-right uppercase drop-shadow-lg text-white">${m.home}</span>
+                        ${renderLogo(m.homeLogo)}
+                    </div>
+                    <div class="flex flex-col items-center w-[200px]">
+                        ${scoreBox}
+                        ${!isResult ? timeInfo : ''}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-5">
+                        ${renderLogo(m.awayLogo)}
+                        <span class="text-[42px] font-bold font-oswald uppercase drop-shadow-lg text-white">${m.away}</span>
+                    </div>
+                </div>
+                ${setScoresHtml}
+                ${extraInfo}
+            `;
+        } else if (style === 'gradient') {
+            cardClasses = 'bg-gradient-to-r from-blue-900/80 to-indigo-900/80 border border-blue-500/30 shadow-lg py-8 px-6';
+            innerHtml = `
+                <div class="flex items-center justify-between gap-6 px-4">
+                    <div class="flex-1 flex items-center justify-end gap-5">
+                        <span class="text-[40px] font-bold font-oswald text-right uppercase text-blue-100">${m.home}</span>
+                        ${renderLogo(m.homeLogo)}
+                    </div>
+                    <div class="flex flex-col items-center w-[180px] bg-black/30 py-3 px-2 rounded-2xl border border-white/5">
+                        ${scoreBox}
+                        ${!isResult ? timeInfo : ''}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-5">
+                        ${renderLogo(m.awayLogo)}
+                        <span class="text-[40px] font-bold font-oswald uppercase text-blue-100">${m.away}</span>
+                    </div>
+                </div>
+                ${setScoresHtml}
+                ${extraInfo}
+            `;
+        } else if (style === 'neon') {
+            cardClasses = 'bg-[#0a0a0f] border-2 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.5)] py-8 px-6 relative overflow-hidden';
+            innerHtml = `
+                <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full -ml-16 -mb-16 blur-2xl"></div>
+                <div class="flex items-center justify-between gap-6 relative z-10">
+                    <div class="flex-1 flex items-center justify-end gap-5">
+                        <span class="text-[42px] font-black font-oswald text-right uppercase text-white tracking-tighter italic" style="text-shadow: 0 0 10px #06b6d4">${m.home}</span>
+                        <div class="border-2 border-cyan-400 p-1 rounded-lg bg-black shadow-[0_0_10px_rgba(34,211,238,0.4)]">${renderLogo(m.homeLogo)}</div>
+                    </div>
+                    <div class="flex flex-col items-center w-[180px]">
+                        ${isResult ? `
+                            <div class="flex items-center gap-3 font-mono">
+                                <span class="text-[64px] font-bold text-cyan-400" style="text-shadow: 0 0 15px #22d3ee">${m.homeScore ?? 0}</span>
+                                <span class="text-3xl text-gray-500">:</span>
+                                <span class="text-[64px] font-bold text-purple-400" style="text-shadow: 0 0 15px #a855f7">${m.awayScore ?? 0}</span>
+                            </div>
+                        ` : `
+                            <div class="text-white text-[32px] font-black italic tracking-[0.2em] animate-pulse" style="text-shadow: 0 0 10px #fff">VS</div>
+                            ${timeInfo}
+                        `}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-5">
+                        <div class="border-2 border-purple-400 p-1 rounded-lg bg-black shadow-[0_0_10px_rgba(168,85,247,0.4)]">${renderLogo(m.awayLogo)}</div>
+                        <span class="text-[42px] font-black font-oswald uppercase text-white tracking-tighter italic" style="text-shadow: 0 0 10px #a855f7">${m.away}</span>
+                    </div>
+                </div>
+                ${setScoresHtml}
+                ${extraInfo}
+            `;
+        } else if (style === 'retro') {
+            cardClasses = 'bg-[#1a1a1a] border-[6px] border-[#333] shadow-[inset_0_4px_10px_rgba(0,0,0,0.8)] py-6 px-10 rounded-none';
+            innerHtml = `
+                <style>
+                    .retro-lcd { font-family: 'Courier New', Courier, monospace; letter-spacing: -2px; }
+                </style>
+                <div class="flex items-center justify-between gap-6">
+                    <div class="flex-1 flex items-center justify-end gap-6">
+                        <span class="text-[48px] font-bold uppercase text-yellow-500 retro-lcd">${m.home}</span>
+                        <div class="bg-black p-2 border-2 border-gray-700">${renderLogo(m.homeLogo)}</div>
+                    </div>
+                    <div class="flex flex-col items-center w-[180px] bg-black/80 py-4 px-2 border-b-4 border-red-600">
+                        ${isResult ? `
+                            <div class="text-[68px] font-bold text-red-500 leading-none">
+                                ${m.homeScore ?? 0}<span class="animate-pulse">:</span>${m.awayScore ?? 0}
+                            </div>
+                        ` : `
+                            <div class="text-red-500 text-[40px] font-bold">VS</div>
+                            <div class="text-green-500 text-[24px] font-bold mt-2">${m.time || ''}</div>
+                        `}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-6">
+                        <div class="bg-black p-2 border-2 border-gray-700">${renderLogo(m.awayLogo)}</div>
+                        <span class="text-[48px] font-bold uppercase text-yellow-500 retro-lcd">${m.away}</span>
+                    </div>
+                </div>
+                ${isResult && m.setScores ? `
+                    <div class="mt-6 text-center text-green-400 font-mono text-4xl tracking-[0.4em] font-black uppercase p-3 border-t-2 border-gray-800 bg-black/40">
+                        SETS: ${m.setScores}
+                    </div>
+                ` : extraInfo}
+            `;
+        } else if (style === 'modern-clean') {
+            cardClasses = 'bg-white border-[1px] border-gray-200 shadow-xl py-8 px-10';
+            innerHtml = `
+                <div class="flex items-center justify-between gap-10">
+                    <div class="flex-1 flex items-center justify-end gap-6">
+                        <span class="text-[38px] font-black text-gray-900 uppercase tracking-tight">${m.home}</span>
+                        <div class="w-24 h-24 p-1">${renderLogo(m.homeLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full')}</div>
+                    </div>
+                    <div class="flex flex-col items-center w-[140px] px-4">
+                        ${isResult ? `
+                            <div class="flex items-center gap-4">
+                                <span class="text-[60px] font-black text-gray-900">${m.homeScore ?? 0}</span>
+                                <span class="text-[60px] font-black text-gray-900">${m.awayScore ?? 0}</span>
+                            </div>
+                            <div class="h-1 w-full bg-blue-600 rounded-full mt-[-6px]"></div>
+                        ` : `
+                            <div class="text-gray-400 text-[28px] font-bold mb-2">VS</div>
+                            <div class="bg-black text-white px-4 py-1 rounded text-[20px] font-black">${m.time || ''}</div>
+                        `}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-6">
+                        <div class="w-24 h-24 p-1">${renderLogo(m.awayLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full')}</div>
+                        <span class="text-[38px] font-black text-gray-900 uppercase tracking-tight">${m.away}</span>
+                    </div>
+                </div>
+                ${isResult && m.setScores ? `
+                    <div class="mt-8 flex justify-center gap-4">
+                        ${m.setScores.split(',').map(s => `<span class="bg-blue-50 text-blue-800 border-2 border-blue-200 px-5 py-2 rounded-xl text-3xl font-black shadow-sm">${s.trim()}</span>`).join('')}
+                    </div>
+                ` : extraInfo.replace('text-gray-300', 'text-gray-500')}
+            `;
+        } else if (style === 'luxury') {
+            cardClasses = 'bg-gradient-to-br from-gray-900 to-black border-2 border-yellow-600/50 shadow-[0_15px_45px_rgba(0,0,0,0.8)] py-10 px-6 relative';
+            innerHtml = `
+                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, #d4af37 1px, transparent 0); background-size: 24px 24px;"></div>
+                <div class="flex items-center justify-between gap-6 relative z-10 font-serif">
+                    <div class="flex-1 flex items-center justify-end gap-5">
+                        <span class="text-[40px] font-bold uppercase tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-yellow-500 to-yellow-800 text-right leading-tight">${m.home}</span>
+                        <div class="w-20 h-20 bg-gradient-to-tr from-yellow-700 to-yellow-300 p-0.5 rounded-full shadow-lg">
+                            <div class="w-full h-full bg-black rounded-full p-2 flex items-center justify-center">${renderLogo(m.homeLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full')}</div>
                         </div>
                     </div>
-                    
-                    ${setScoresHtml}
-                    ${dateInfo}
-
-                    <!-- Stats / Form if needed -->
-                    ${(m.venue || m.channel) ? `
-                        <div class="mt-4 pt-4 border-t border-white/10 flex justify-center items-center gap-8 relative z-10 w-full max-w-[80%] mx-auto">
-                           ${m.venue ? `<span class="text-[24px] text-gray-300"><i class="fas fa-map-marker-alt text-yellow-400 mr-2"></i>${m.venue}</span>` : ''}
-                           ${(m.venue && m.channel) ? `<span class="text-[24px] text-gray-600">|</span>` : ''}
-                           ${m.channel ? `<span class="text-[24px] text-gray-300"><i class="fas fa-tv text-blue-400 mr-2"></i>${m.channel}</span>` : ''}
+                    <div class="flex flex-col items-center w-[160px]">
+                        ${isResult ? `
+                            <div class="text-[64px] font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 drop-shadow-2xl">
+                                ${m.homeScore}<span class="text-yellow-500 mx-2">-</span>${m.awayScore}
+                            </div>
+                        ` : `
+                            <div class="text-yellow-600 font-bold text-[36px] tracking-[0.4em] border-y border-yellow-600/30 py-2">VS</div>
+                            <div class="text-gray-400 font-bold text-xl mt-3 tracking-widest uppercase">${m.time || ''}</div>
+                        `}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-5">
+                        <div class="w-20 h-20 bg-gradient-to-tr from-yellow-700 to-yellow-300 p-0.5 rounded-full shadow-lg">
+                            <div class="w-full h-full bg-black rounded-full p-2 flex items-center justify-center">${renderLogo(m.awayLogo).replace('w-[80px]', 'w-full').replace('h-[80px]', 'h-full')}</div>
                         </div>
-                    ` : ''}
+                        <span class="text-[40px] font-bold uppercase tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-yellow-500 to-yellow-800 text-left leading-tight">${m.away}</span>
+                    </div>
                 </div>
+                ${isResult && m.setScores ? `
+                    <div class="mt-8 flex justify-center gap-5">
+                        ${m.setScores.split(',').map(s => `<span class="border-2 border-yellow-500 text-yellow-500 px-6 py-2 rounded-lg text-3xl font-black bg-black shadow-[0_0_20px_rgba(212,175,55,0.2)]">${s.trim()}</span>`).join('')}
+                    </div>
+                ` : extraInfo}
             `;
-        }).join('')}
-            ${dots ? `<div class="flex items-center gap-3 px-8 bg-black/40 rounded-lg border border-white/10 backdrop-blur-sm h-16 self-center">${dots}</div>` : ''}
-        </div>`;
+        } else if (style === 'minimal') {
+            cardClasses = 'bg-transparent border-b border-white/20 pb-4 mb-6 rounded-none';
+            innerHtml = `
+                <div class="flex items-center justify-between gap-6 px-4">
+                    <div class="flex-1 flex flex-col items-end">
+                        <span class="text-[38px] font-normal font-oswald text-right uppercase tracking-wider text-white">${m.home}</span>
+                    </div>
+                    <div class="flex flex-col items-center w-[140px]">
+                        ${isResult ? `
+                            <div class="text-white font-black text-[48px]">${m.homeScore} : ${m.awayScore}</div>
+                            <div class="text-yellow-400 text-3xl uppercase font-black tracking-widest mt-2">${m.setScores || ''}</div>
+                        ` : `
+                            <div class="text-white font-bold text-[32px] tracking-widest">${m.time || ''}</div>
+                        `}
+                    </div>
+                    <div class="flex-1 flex flex-col items-start">
+                        <span class="text-[38px] font-normal font-oswald uppercase tracking-wider text-white">${m.away}</span>
+                    </div>
+                </div>
+                ${extraInfo}
+            `;
+        } else { // dark
+            cardClasses = 'bg-gray-900 border border-gray-700 shadow-lg py-8 px-6';
+            innerHtml = `
+                <div class="flex items-center justify-between gap-6 px-4">
+                    <div class="flex-1 flex items-center justify-end gap-5">
+                        <span class="text-[40px] font-bold font-oswald text-right uppercase text-gray-200">${m.home}</span>
+                        ${renderLogo(m.homeLogo)}
+                    </div>
+                    <div class="flex flex-col items-center w-[180px]">
+                        ${scoreBox}
+                        ${!isResult ? timeInfo : ''}
+                    </div>
+                    <div class="flex-1 flex items-center justify-start gap-5">
+                        ${renderLogo(m.awayLogo)}
+                        <span class="text-[40px] font-bold font-oswald uppercase text-gray-200">${m.away}</span>
+                    </div>
+                </div>
+                ${setScoresHtml}
+                ${extraInfo}
+            `;
+        }
+
+        return `
+            <div class="card-row rounded-3xl p-5 mb-8 ${cardClasses} ${t.animation}"
+                style="animation-delay:${(i * t.animStagger).toFixed(2)}s; --anim-dur:${t.animDuration}s">
+                ${innerHtml}
+            </div>`;
     },
 
     onPlayerDragStart(e, team, index) {
@@ -1098,7 +1301,7 @@ export const Volleyball = {
         }
 
         const m = t.results[0]; // Focuses on single match
-        const dateInfo = m.date || m.time ? `<div class="mt-8 mb-4 text-center"><span class="bg-black/80 text-gray-300 px-5 py-2 text-[20px] font-bold tracking-[0.2em] rounded-full border border-gray-600 shadow-md">${m.date} ${m.time ? '• ' + m.time : ''} ${m.venue ? '• ' + m.venue : ''}</span></div>` : '';
+        const dateInfo = m.date || m.time ? `<div class="mt-8 mb-4 text-center ${t.animation}" style="--anim-dur:${t.animDuration}s"><span class="bg-black/80 text-gray-300 px-5 py-2 text-[20px] font-bold tracking-[0.2em] rounded-full border border-gray-600 shadow-md">${m.date} ${m.time ? '• ' + m.time : ''} ${m.venue ? '• ' + m.venue : ''}</span></div>` : '';
 
         // Auto Arrange Volleyball (6 players per side: 3 front, 3 back)
         const applyFormation = (lineup, isHome) => {
@@ -1127,22 +1330,23 @@ export const Volleyball = {
         const renderPlayerNode = (p, index, isHome) => {
             const teamStr = isHome ? 'home' : 'away';
             const colorClass = isHome ? 'bg-blue-800 border-blue-400' : 'bg-red-800 border-red-400';
+            const staggerIdx = isHome ? index : (index + (m.homeLineup?.length || 6));
             const avatarHtml = `
-                <div id="player-${teamStr}-${index}" 
-                     class="absolute w-[80px] h-fit -ml-[40px] -mt-[40px] flex flex-col items-center cursor-move transition-transform duration-75 select-none"
-                     style="left: ${p.x}%; top: ${p.y}%;"
-                     onmousedown="window.VolleyballModule.onPlayerDragStart(event, '${teamStr}', ${index})"
-                     ontouchstart="window.VolleyballModule.onPlayerDragStart(event, '${teamStr}', ${index})">
-                    
-                    <div class="w-12 h-12 rounded-full ${colorClass} border-[3px] shadow-[0_4px_10px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md bg-opacity-90">
-                        <span class="font-oswald font-black text-white text-[22px] leading-none drop-shadow-md z-10">${p.no || '-'}</span>
-                    </div>
+                    <div id="player-${teamStr}-${index}" 
+                         class="absolute w-[110px] h-fit -ml-[55px] -mt-[55px] flex flex-col items-center cursor-move transition-transform duration-75 select-none ${t.animation}"
+                         style="left: ${p.x}%; top: ${p.y}%; animation-delay:${(staggerIdx * t.animStagger).toFixed(2)}s; --anim-dur:${t.animDuration}s"
+                         onmousedown="window.VolleyballModule.onPlayerDragStart(event, '${teamStr}', ${index})"
+                         ontouchstart="window.VolleyballModule.onPlayerDragStart(event, '${teamStr}', ${index})">
+                        
+                        <div class="w-14 h-14 rounded-full ${colorClass} border-[4px] shadow-[0_6px_15px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md bg-opacity-90">
+                            <span class="font-oswald font-black text-white text-[28px] leading-none drop-shadow-md z-10">${p.no || '-'}</span>
+                        </div>
 
-                    <div class="mt-1 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded shadow-lg border border-white/60 whitespace-nowrap min-w-[70px] text-center">
-                        <p class="font-oswald font-bold text-gray-900 text-[16px] leading-[1.1] truncate">${p.name || ''}</p>
-                        ${p.pos ? `<p class="text-[10px] font-bold ${isHome ? 'text-blue-700' : 'text-red-700'} uppercase tracking-widest leading-none mt-0.5">${p.pos}</p>` : ''}
+                        <div class="mt-2 bg-white/95 backdrop-blur-md px-3 py-1 rounded shadow-xl border border-white/60 whitespace-nowrap min-w-[90px] text-center">
+                            <p class="font-oswald font-black text-gray-900 text-[22px] leading-[1.1] truncate">${p.name || ''}</p>
+                            ${p.pos ? `<p class="text-[14px] font-bold ${isHome ? 'text-blue-700' : 'text-red-700'} uppercase tracking-widest leading-none mt-1">${p.pos}</p>` : ''}
+                        </div>
                     </div>
-                </div>
             `;
             return avatarHtml;
         };
@@ -1153,7 +1357,7 @@ export const Volleyball = {
         view.innerHTML = `
             <div class="w-full h-full flex flex-col bg-gradient-to-b from-black/80 to-transparent p-4 pt-10">
                 <!-- Header Custom -->
-                <div class="flex items-center justify-center gap-4 mb-4 relative z-10 px-8">
+                <div class="flex items-center justify-center gap-4 mb-4 relative z-10 px-8 ${t.animation}" style="--anim-dur:${t.animDuration}s">
                     ${t.leagueLogo ? `<img src="${t.leagueLogo}" class="h-[60px] object-contain drop-shadow-[0_5px_15px_rgba(255,255,255,0.4)]">` : ''}
                     <div class="flex flex-col text-center">
                         <span class="text-[14px] font-bold text-yellow-400 tracking-[0.3em] uppercase drop-shadow-md">STARTING LINEUP</span>
@@ -1162,7 +1366,8 @@ export const Volleyball = {
                 </div>
 
                 <!-- Matchup Card -->
-                <div class="bg-black/60 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-lg relative z-10 mx-6 mb-4">
+                <div class="bg-black/60 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-lg relative z-10 mx-6 mb-4 ${t.animation}" 
+                     style="animation-delay:${t.animStagger}s; --anim-dur:${t.animDuration}s">
                     <div class="flex justify-between items-center px-4">
                         <div class="flex-1 flex items-center justify-start gap-4">
                             <div class="w-[70px] h-[70px] rounded-full bg-blue-900/40 border-[3px] border-blue-400 p-1 flex items-center justify-center shadow-md">

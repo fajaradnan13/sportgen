@@ -96,7 +96,7 @@ export const AssetRegistry = {
      */
     findClubLogo(sport, league, clubName) {
         const logos = this.getLogos(sport, league);
-        const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, '');
         const target = norm(clubName);
         const match = logos.find(l => norm(l.name).includes(target) || target.includes(norm(l.name)));
         return match ? match.url : null;

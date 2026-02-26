@@ -35,7 +35,44 @@
             "champions-league": {
                 "label": "UEFA Champions League",
                 "path": "assets/football/logos/champions-league/",
-                "files": []
+                "files": [
+                    "Ajax.png",
+                    "Arsenal.png",
+                    "Atalanta.png",
+                    "Athletico Madrid.png",
+                    "Barcelona.png",
+                    "Bayern.png",
+                    "Benfica.png",
+                    "Bilbao.png",
+                    "Bodo Glimt.png",
+                    "Chelsea.png",
+                    "Club Brugge.png",
+                    "Copenhagen.png",
+                    "Dortmund.png",
+                    "Eintracht Frankfurt.png",
+                    "Galatasaray.png",
+                    "Inter.png",
+                    "Juventus.png",
+                    "Kairat.png",
+                    "Leverkusen.png",
+                    "Liverpool.png",
+                    "Madrid.png",
+                    "Man City.png",
+                    "Marseille.png",
+                    "Monaco.png",
+                    "Napoli.png",
+                    "Newcastle.png",
+                    "Olympiakos.png",
+                    "PSG.png",
+                    "PSV.png",
+                    "Pafos.png",
+                    "Qarabag.png",
+                    "Slavia Praha.png",
+                    "Sporting CP.png",
+                    "Tottenham.png",
+                    "Union Saint-Gilloise.png",
+                    "Villareal.png"
+                ]
             },
             "premier-league": {
                 "label": "Premier League",
@@ -66,7 +103,28 @@
             "la-liga": {
                 "label": "La Liga",
                 "path": "assets/football/logos/la-liga/",
-                "files": []
+                "files": [
+                    "Alaves.png",
+                    "Atletico Madrid.png",
+                    "Barcelona.png",
+                    "Bilbao.png",
+                    "Celta Vigo.png",
+                    "Elche.png",
+                    "Espanyol.png",
+                    "Getafe.png",
+                    "Girona.png",
+                    "Levante.png",
+                    "Madrid.png",
+                    "Mallorca.png",
+                    "Osasuna.png",
+                    "Rayo Vallecano.png",
+                    "Real Betis.png",
+                    "Real Oviedo.png",
+                    "Real Sociedad.png",
+                    "Sevilla.png",
+                    "Valencia.png",
+                    "Villareal.png"
+                ]
             },
             "bundesliga": {
                 "label": "Bundesliga",
@@ -76,7 +134,28 @@
             "serie-a": {
                 "label": "Serie A",
                 "path": "assets/football/logos/serie-a/",
-                "files": []
+                "files": [
+                    "AC Milan.png",
+                    "AS Roma.png",
+                    "Atalanta.png",
+                    "Bologna.png",
+                    "Cagliari.png",
+                    "Como.png",
+                    "Cremonese.png",
+                    "Fiorentina.png",
+                    "Genoa.png",
+                    "Inter Milan.png",
+                    "Juventus.png",
+                    "Lazio.png",
+                    "Lecce.png",
+                    "Napoli.png",
+                    "Parma.png",
+                    "Pisa.png",
+                    "Sassuolo.png",
+                    "Torino.png",
+                    "Udinese.png",
+                    "Verona.png"
+                ]
             },
             "ligue-1": {
                 "label": "Ligue 1",
@@ -113,17 +192,20 @@
             "path": "assets/football/league-badges/",
             "files": [
                 "Super League.png",
-                "Premier-League-Logo-PNG.png"
+                "Premier-League-Logo-PNG.png",
+                "Champions League.jpg",
+                "La Liga.png",
+                "Serie A.png"
             ],
             "_note": "Add badge files here. leagueBadgeMap links dropdown values to badge filenames.",
             "leagueBadgeMap": {
                 "BRI SUPER LEAGUE": "Super League.png",
                 "Liga 1 Indonesia": "Super League.png",
                 "Premier League": "Premier-League-Logo-PNG.png",
-                "La Liga": "",
-                "UEFA Champions League": "",
+                "La Liga": "La Liga.png",
+                "UEFA Champions League": "Champions League.jpg",
+                "Serie A": "Serie A.png",
                 "Bundesliga": "",
-                "Serie A": "",
                 "Ligue 1": "",
                 "Eredivisie": "",
                 "AFC Champions League": "",
@@ -147,10 +229,17 @@
                 "label": "Proliga Indonesia",
                 "path": "assets/volleyball/logos/proliga/",
                 "files": [
+                    "Bandung BJB.png",
                     "Bhayangkara.png",
                     "Falcons.png",
                     "Garuda Putra.png",
+                    "Gresik Petrokimia.png",
+                    "Jakarta Elektrik.png",
+                    "Jakarta Livin Mandiri.png",
+                    "Jakarta Pertamina.png",
+                    "Jakarta Popsivo.png",
                     "Lavani.png",
+                    "Medan Falcons.png",
                     "Proliga.png",
                     "Samator.png"
                 ]

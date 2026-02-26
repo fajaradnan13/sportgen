@@ -231,6 +231,7 @@ export const SmartParser = {
             date: m.date ?? '', time: m.time ?? '', home: m.home ?? m.homeTeam ?? '',
             away: m.away ?? m.awayTeam ?? '', venue: m.venue ?? m.stadium ?? '',
             channel: m.channel ?? m.tv ?? '', homeScore: m.homeScore ?? null, awayScore: m.awayScore ?? null,
+            setScores: m.setScores ?? m.sets ?? '',
             homeScorers: hScorers, awayScorers: aScorers,
             stats: m.stats ?? [], homeLineup: m.homeLineup ?? [], awayLineup: m.awayLineup ?? []
         };
