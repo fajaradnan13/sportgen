@@ -253,6 +253,9 @@ export const Badminton = {
                 </div>
             </div>
         </div>
+
+        <!-- Mobile Spacer to fix scroll clipping -->
+        <div class="h-32 w-full"></div>
         `;
     },
 

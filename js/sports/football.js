@@ -777,10 +777,11 @@ export const Football = {
                         </div>
                     </div>
                 </div>
-            </div>
-
             <!-- Mode-specific content -->
             <div id="mode-specific-controls"></div>
+            
+            <!-- Mobile Spacer to fix scroll clipping -->
+            <div class="h-32 w-full"></div>
         `;
 
         // Render mode-specific controls
